@@ -12,19 +12,30 @@ from plc_monitor.config import load_config, with_plc
 from plc_monitor.plotter import run_plot
 from plc_monitor.sampler import CsvLogger, Poller, SampleBuffer
 from plc_monitor.simulator import SimulatorThread, run_simulator
+from plc_monitor.stream_client import PacketBuffer, StreamClient
+from plc_monitor.stream_config import apply_stream_overrides, load_stream_config
+from plc_monitor.stream_plotter import run_stream_plot
+from plc_monitor.stream_sim import PacketStreamServer
 
 log = logging.getLogger("plc_monitor")
 
 LOCAL_SIM_HOST = "127.0.0.1"
 LOCAL_SIM_PORT = 5020
+LOCAL_STREAM_HOST = "127.0.0.1"
+DEFAULT_STREAM_CONFIG = "config.siemens.yaml"
+STREAM_COMMANDS = frozenset({"stream", "stream-sim", "stream-demo"})
 
 
-def _add_common(parser: argparse.ArgumentParser) -> None:
+def _add_common(
+    parser: argparse.ArgumentParser,
+    *,
+    default_config: str = "config.yaml",
+) -> None:
     parser.add_argument(
         "-c",
         "--config",
-        default="config.yaml",
-        help="File YAML di configurazione (default: config.yaml)",
+        default=default_config,
+        help=f"File YAML di configurazione (default: {default_config})",
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Log più dettagliati")
 
@@ -36,10 +47,28 @@ def _add_connection(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--poll-ms", type=int, dest="poll_ms", help="Intervallo di lettura in ms")
 
 
+def _add_stream_connection(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--host", help="IP del PLC / stream (sovrascrive la config)")
+    parser.add_argument("--port", type=int, help="Porta TCP stream (sovrascrive la config)")
+
+
+def _add_stream_plot_opts(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--save", help="Salva un PNG invece di aprire la finestra")
+    parser.add_argument(
+        "--seconds",
+        type=float,
+        default=None,
+        help="Durata della cattura in secondi (implicito se usi --save)",
+    )
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="plc-monitor",
-        description="Legge segnali da un PLC via Modbus TCP e li graficizza in tempo reale.",
+        description=(
+            "Legge segnali da un PLC via Modbus TCP oppure stream TCP multi-canale "
+            "(Siemens 100 ch @ 1000 Hz) e li graficizza in tempo reale."
+        ),
     )
     _add_common(parser)
 
@@ -71,6 +100,30 @@ def _parser() -> argparse.ArgumentParser:
     demo.add_argument("--save", help="Salva un PNG invece di aprire la finestra")
     demo.add_argument("--seconds", type=float, default=None)
     demo.add_argument("--csv", help="Percorso CSV di log")
+
+    stream = sub.add_parser(
+        "stream",
+        help="Ricevi stream TCP multi-canale (Siemens 100 ch @ 1000 Hz) e grafica",
+    )
+    _add_common(stream, default_config=DEFAULT_STREAM_CONFIG)
+    _add_stream_connection(stream)
+    _add_stream_plot_opts(stream)
+
+    stream_sim = sub.add_parser(
+        "stream-sim",
+        help="Avvia un simulatore di stream TCP (100 ch @ 1000 Hz, pacchetti da 100 ms)",
+    )
+    _add_common(stream_sim, default_config=DEFAULT_STREAM_CONFIG)
+    _add_stream_connection(stream_sim)
+
+    stream_demo = sub.add_parser(
+        "stream-demo",
+        help="Simulatore stream + grafico locale, senza PLC",
+    )
+    _add_common(stream_demo, default_config=DEFAULT_STREAM_CONFIG)
+    _add_stream_connection(stream_demo)
+    _add_stream_plot_opts(stream_demo)
+
     return parser
 
 
@@ -178,9 +231,133 @@ def cmd_demo(args: argparse.Namespace) -> int:
         sim.stop()
 
 
+def _load_stream(args: argparse.Namespace, *, local_sim: bool = False):
+    cfg = apply_stream_overrides(load_stream_config(args.config), args)
+    if local_sim:
+        host = args.host or LOCAL_STREAM_HOST
+        port = args.port if args.port is not None else cfg.port
+        cfg = apply_stream_overrides(
+            cfg,
+            argparse.Namespace(host=host, port=port),
+        )
+    return cfg
+
+
+def _start_stream_session(cfg):
+    buffer = PacketBuffer(maxlen=max(200, cfg.window_packets * 2))
+    client = StreamClient(
+        cfg.host,
+        cfg.port,
+        buffer,
+        timeout=cfg.timeout,
+        expected_channels=cfg.channels,
+        expected_samples=cfg.samples_per_packet,
+    )
+    client.start()
+    return buffer, client
+
+
+def _stop_stream_session(client: StreamClient) -> None:
+    client.stop()
+    client.join(timeout=3)
+
+
+def cmd_stream(args: argparse.Namespace) -> int:
+    cfg = _load_stream(args)
+    log.info(
+        "Stream da %s:%s (%d ch, %d samp/pkt @ %.0f Hz)",
+        cfg.host,
+        cfg.port,
+        cfg.channels,
+        cfg.samples_per_packet,
+        cfg.sample_hz,
+    )
+    buffer, client = _start_stream_session(cfg)
+    try:
+        saved = run_stream_plot(
+            buffer,
+            channels_to_show=list(cfg.plot_channels),
+            sample_hz=cfg.sample_hz,
+            window_packets=cfg.window_packets,
+            save_path=args.save,
+            seconds=args.seconds,
+            title=cfg.title,
+        )
+        if saved:
+            log.info("Grafico salvato in %s", saved)
+        packets, stats = buffer.snapshot()
+        if not packets:
+            log.error(
+                "Nessun pacchetto ricevuto da %s:%s (err=%s). "
+                "Il PLC 192.168.2.100 richiede LAN/VPN dal PC di officina; "
+                "da questa VM usa stream-demo.",
+                cfg.host,
+                cfg.port,
+                stats.last_error or "-",
+            )
+            return 1
+        return 0
+    finally:
+        _stop_stream_session(client)
+
+
+def cmd_stream_sim(args: argparse.Namespace) -> int:
+    cfg = _load_stream(args, local_sim=True)
+    log.info(
+        "Avvio simulatore stream su %s:%s (%d ch @ %.0f Hz, ogni %.0f ms)",
+        cfg.host,
+        cfg.port,
+        cfg.channels,
+        cfg.sample_hz,
+        cfg.packet_ms,
+    )
+    server = PacketStreamServer(
+        host=cfg.host,
+        port=cfg.port,
+        channels=cfg.channels,
+        samples=cfg.samples_per_packet,
+        sample_hz=cfg.sample_hz,
+        packet_ms=cfg.packet_ms,
+    )
+    server.start_ready()
+    try:
+        while server.is_alive():
+            server.join(timeout=1.0)
+            if not server.is_alive():
+                break
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.stop()
+    return 0
+
+
+def cmd_stream_demo(args: argparse.Namespace) -> int:
+    cfg = _load_stream(args, local_sim=True)
+    server = PacketStreamServer(
+        host=cfg.host,
+        port=cfg.port,
+        channels=cfg.channels,
+        samples=cfg.samples_per_packet,
+        sample_hz=cfg.sample_hz,
+        packet_ms=cfg.packet_ms,
+    )
+    server.start_ready()
+    try:
+        args.host = cfg.host
+        args.port = cfg.port
+        return cmd_stream(args)
+    finally:
+        server.stop()
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     _setup_logging(args.verbose)
+    # Stream subcommands default to config.siemens.yaml even if the parent
+    # parser still carries config.yaml from the top-level defaults.
+    if args.command in STREAM_COMMANDS and args.config == "config.yaml":
+        args.config = DEFAULT_STREAM_CONFIG
     config_path = Path(args.config)
     if not config_path.exists():
         log.error("Config non trovata: %s", config_path)
@@ -190,6 +367,9 @@ def main(argv: list[str] | None = None) -> int:
         "plot": cmd_plot,
         "simulate": cmd_simulate,
         "demo": cmd_demo,
+        "stream": cmd_stream,
+        "stream-sim": cmd_stream_sim,
+        "stream-demo": cmd_stream_demo,
     }
     try:
         return commands[args.command](args)

@@ -1,11 +1,16 @@
-# Monitor PLC via Modbus TCP
+# Monitor PLC via Modbus TCP + stream Siemens realtime
 
 Programmino Python per **leggere e graficizzare segnali da un PLC** su TCP/IP.
 
-Usa **Modbus TCP** (porta 502 di solito): è il protocollo Ethernet più diffuso su PLC Siemens (con gateway), Schneider, Omron, Codesys, Wago, ecc. Non serve un runtime del costruttore.
+Due modalità:
+
+1. **Modbus TCP** (porta 502 di solito) — polling di holding/input register
+2. **Stream TCP custom** — pacchetti binari multi-canale ad alta frequenza
+   (es. Siemens **100 canali @ 1000 Hz**, un pacchetto ogni **100 ms** con timestamp)
 
 ## Cosa fa
 
+### Modbus TCP
 - si collega al PLC (`host` + `port` in `config.yaml`)
 - legge holding register, input register, coil e discrete input
 - decodifica `uint16`, `int16`, `uint32`, `int32`, `float32`, `bool`
@@ -14,6 +19,16 @@ Usa **Modbus TCP** (porta 502 di solito): è il protocollo Ethernet più diffuso
 - mostra un grafico live (una traccia per segnale)
 - può salvare CSV e PNG
 - include un **simulatore** per provarlo senza hardware
+
+### Stream Siemens (100 ch @ 1000 Hz)
+- riceve pacchetti TCP (`config.siemens.yaml`, default host `192.168.2.100:2000`)
+- ogni pacchetto (≈100 ms) contiene **100 canali × 100 campioni** float32 + **timestamp ns** + sequence
+- grafico realtime di alcuni canali + rate pacchetti / gap / timestamp
+- **stream-demo** / **stream-sim** per provarlo in locale senza PLC
+
+> **Rete:** il PLC `192.168.2.100` è raggiungibile solo da un PC nella stessa LAN (o via VPN).
+> Dal Cloud Agent (rete `172.30.x`) **non** si apre la connessione al PLC reale:
+> usare `stream-demo` per validare la pipeline; per il PLC reale serve LAN/VPN.
 
 ## Apri il progetto e crea l'ambiente
 
@@ -40,7 +55,39 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## PLC reale (grafico in tempo reale)
+## Stream Siemens realtime (100 ch @ 1000 Hz)
+
+Formato pacchetto (little-endian): header 24 byte (`PLCP` + version + n_ch + n_samples + seq + `timestamp_ns`) + payload float32 canale-major. Con 100 ch × 100 campioni → ~40 KB + header ogni 100 ms.
+
+### Demo locale (senza PLC) — funziona anche dal Cloud Agent
+
+```bash
+source .venv/bin/activate
+python -m plc_monitor stream-demo
+# headless / CI:
+python -m plc_monitor stream-demo --seconds 3 --save /tmp/siemens_stream.png
+```
+
+Solo il simulatore TCP (poi in un altro terminale `stream --host 127.0.0.1`):
+
+```bash
+python -m plc_monitor stream-sim
+```
+
+### PLC reale (stessa LAN / VPN)
+
+1. Sul PLC: socket TCP server (es. TSEND_C / TRCV) sulla porta configurata (default **2000**) che emette il formato sopra.
+2. Esegui sul **PC nella stessa rete** del PLC (non dal Cloud Agent).
+3. Config in `config.siemens.yaml` (host `192.168.2.100`, 100 ch, 100 samp/pkt, 1000 Hz).
+
+```bash
+source .venv/bin/activate
+python -m plc_monitor stream --host 192.168.2.100 --port 2000
+# oppure usa i default di config.siemens.yaml:
+python -m plc_monitor stream
+```
+
+## PLC reale Modbus (grafico in tempo reale)
 
 1. Sul PLC deve essere attivo il server **Modbus TCP** (porta di solito **502**).
 2. Esegui il programma sul **PC nella stessa rete** del PLC (dal Cloud Agent non raggiungi l'IP di officina).
@@ -62,7 +109,7 @@ python -m plc_monitor plot --host 192.168.1.10 --port 502
 
 Se `test` fallisce: PLC acceso, cavo/Wi-Fi, IP pingabile, Modbus TCP abilitato, porta e unit ID corretti.
 
-## Demo senza hardware
+## Demo Modbus senza hardware
 
 ```bash
 python -m plc_monitor demo
@@ -70,7 +117,7 @@ python -m plc_monitor demo
 
 ## Configurazione
 
-In `config.yaml`:
+### Modbus — `config.yaml`
 
 ```yaml
 plc:
@@ -91,6 +138,20 @@ signals:
 ```
 
 Sul PLC abilita il server **Modbus TCP**. Se i valori letti sono insensati, inverti `word_order` (`abcd` ↔ `cdab` è il caso più frequente).
+
+### Stream Siemens — `config.siemens.yaml`
+
+```yaml
+stream:
+  host: 192.168.2.100
+  port: 2000
+  channels: 100
+  samples_per_packet: 100   # 1000 Hz × 0.1 s
+  sample_hz: 1000
+  packet_ms: 100
+  plot_channels: [0, 1, 2, 3]
+  window_packets: 50
+```
 
 ## Test
 
