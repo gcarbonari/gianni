@@ -40,36 +40,32 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Uso
+## PLC reale (grafico in tempo reale)
 
-Grafico live verso un PLC reale (modifica prima `config.yaml`):
+1. Sul PLC deve essere attivo il server **Modbus TCP** (porta di solito **502**).
+2. Esegui il programma sul **PC nella stessa rete** del PLC (dal Cloud Agent non raggiungi l'IP di officina).
+3. In `config.yaml` metti IP e i registri che vuoi vedere.
+4. Prova la connessione, poi apri il grafico:
 
 ```bash
+source .venv/bin/activate
+python -m plc_monitor test
 python -m plc_monitor plot
 ```
 
-PLC finto in locale (porta 5020, vedi config di default):
+Oppure senza toccare il file:
 
 ```bash
-python -m plc_monitor simulate
+python -m plc_monitor test --host 192.168.1.10 --port 502
+python -m plc_monitor plot --host 192.168.1.10 --port 502
 ```
 
-In un altro terminale:
+Se `test` fallisce: PLC acceso, cavo/Wi-Fi, IP pingabile, Modbus TCP abilitato, porta e unit ID corretti.
 
-```bash
-python -m plc_monitor plot
-```
-
-Tutto insieme, senza hardware:
+## Demo senza hardware
 
 ```bash
 python -m plc_monitor demo
-```
-
-Cattura di 10 secondi in PNG e CSV (anche senza schermo):
-
-```bash
-python -m plc_monitor demo --seconds 10 --save grafico.png --csv segnali.csv
 ```
 
 ## Configurazione

@@ -78,3 +78,10 @@ def test_plot_png(sim_config, tmp_path: Path) -> None:
         poller.stop()
         poller.join(timeout=2)
         client.close()
+
+
+def test_cli_test_command(sim_config, tmp_path: Path) -> None:
+    from plc_monitor.cli import main
+
+    cfg_path = tmp_path / "config.yaml"
+    assert main(["test", "-c", str(cfg_path)]) == 0

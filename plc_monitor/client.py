@@ -64,8 +64,12 @@ class PlcClient:
 
     def connect(self) -> None:
         if not self._client.connect():
+            host = self.config.plc.host
+            port = self.config.plc.port
             raise PlcReadError(
-                f"Impossibile connettersi a {self.config.plc.host}:{self.config.plc.port}"
+                f"Impossibile connettersi a {host}:{port}. "
+                "Controlla IP, porta Modbus TCP (di solito 502), PLC acceso e stesso LAN. "
+                "Lancia il programma sul PC in rete con il PLC, non dal Cloud Agent."
             )
         log.info("Connesso a %s:%s", self.config.plc.host, self.config.plc.port)
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -121,3 +121,8 @@ def load_config(path: str | Path) -> AppConfig:
         raise ValueError("Nessun segnale definito in configurazione")
 
     return AppConfig(plc=plc, plot=plot, csv=csv, signals=tuple(signals))
+
+
+def with_plc(config: AppConfig, **changes: Any) -> AppConfig:
+    """Restituisce una copia della config con campi PLC sovrascritti (host, port, ...)."""
+    return replace(config, plc=replace(config.plc, **changes))

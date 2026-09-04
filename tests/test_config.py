@@ -7,9 +7,20 @@ from plc_monitor.config import load_config
 
 def test_default_config_loads() -> None:
     cfg = load_config(Path("config.yaml"))
-    assert cfg.plc.port == 5020
+    assert cfg.plc.port == 502
+    assert cfg.plc.host == "192.168.1.10"
     assert [s.name for s in cfg.signals] == ["Temperatura", "Pressione", "Velocita", "Allarme"]
     assert cfg.poll_interval == pytest.approx(0.2)
+
+
+def test_with_plc_overrides_host() -> None:
+    from plc_monitor.config import with_plc
+
+    cfg = load_config(Path("config.yaml"))
+    updated = with_plc(cfg, host="10.0.0.5", port=1502)
+    assert updated.plc.host == "10.0.0.5"
+    assert updated.plc.port == 1502
+    assert cfg.plc.host == "192.168.1.10"
 
 
 def test_missing_file() -> None:

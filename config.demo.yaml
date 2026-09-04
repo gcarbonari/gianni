@@ -1,19 +1,13 @@
-# PLC reale — Modbus TCP.
-# Metti qui l'IP del tuo PLC, poi:  python -m plc_monitor test
-# Grafico live:                     python -m plc_monitor plot
-#
-# Indirizzi 0-based (holding 0 = 40001 su molti PLC).
-# Adatta name / table / address / dtype a come hai mappato i dati sul PLC.
-
+# Simulatore locale (senza hardware):  python -m plc_monitor demo
 plc:
-  host: 192.168.1.10
-  port: 502
+  host: 127.0.0.1
+  port: 5020
   unit_id: 1
   timeout: 2.0
   poll_ms: 200
 
 plot:
-  title: Segnali PLC
+  title: Segnali PLC (demo)
   window_seconds: 30
 
 csv:
