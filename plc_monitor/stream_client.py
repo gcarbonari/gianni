@@ -100,11 +100,11 @@ class StreamClient(threading.Thread):
         self.timeout = timeout
         self.expected_channels = expected_channels
         self.expected_samples = expected_samples
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
         self._sock: socket.socket | None = None
 
     def stop(self) -> None:
-        self._stop.set()
+        self._stop_event.set()
         if self._sock is not None:
             try:
                 self._sock.shutdown(socket.SHUT_RDWR)
@@ -116,13 +116,13 @@ class StreamClient(threading.Thread):
                 pass
 
     def run(self) -> None:
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             try:
                 self._session()
             except OSError as exc:
                 self.buffer.mark_error(f"Connessione: {exc}")
                 log.warning("Stream interrotto: %s", exc)
-            if self._stop.is_set():
+            if self._stop_event.is_set():
                 break
             time.sleep(1.0)
 
@@ -135,7 +135,7 @@ class StreamClient(threading.Thread):
         pending = bytearray()
         expected = packet_size(self.expected_channels, self.expected_samples)
         try:
-            while not self._stop.is_set():
+            while not self._stop_event.is_set():
                 try:
                     chunk = sock.recv(65536)
                 except socket.timeout:

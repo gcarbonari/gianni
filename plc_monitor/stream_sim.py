@@ -30,7 +30,7 @@ class PacketStreamServer(threading.Thread):
         self.samples = samples
         self.sample_hz = sample_hz
         self.packet_ms = packet_ms
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
         self._ready = threading.Event()
         self._error: BaseException | None = None
         self._server: socket.socket | None = None
@@ -43,7 +43,7 @@ class PacketStreamServer(threading.Thread):
             raise RuntimeError(f"Simulatore stream in errore: {self._error}") from self._error
 
     def stop(self) -> None:
-        self._stop.set()
+        self._stop_event.set()
         if self._server is not None:
             try:
                 self._server.close()
@@ -68,7 +68,7 @@ class PacketStreamServer(threading.Thread):
                 self.samples,
                 self.packet_ms,
             )
-            while not self._stop.is_set():
+            while not self._stop_event.is_set():
                 try:
                     conn, addr = server.accept()
                 except socket.timeout:
@@ -96,7 +96,7 @@ class PacketStreamServer(threading.Thread):
         # timestamp di stream coerente con 1000 Hz
         t0_ns = time.time_ns()
         next_deadline = time.monotonic()
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             packet = synthesize_packet(
                 sequence=seq,
                 timestamp_ns=t0_ns + int(seq * self.samples * 1e9 / self.sample_hz),
@@ -113,7 +113,7 @@ class PacketStreamServer(threading.Thread):
             next_deadline += interval
             sleep_for = next_deadline - time.monotonic()
             if sleep_for > 0:
-                if self._stop.wait(sleep_for):
+                if self._stop_event.wait(sleep_for):
                     return
             else:
                 # in ritardo: non dormire, continua
