@@ -8,6 +8,35 @@ Due modalità:
 2. **Stream TCP custom** — pacchetti binari multi-canale ad alta frequenza
    (es. Siemens **100 canali @ 1000 Hz**, un pacchetto ogni **100 ms** con timestamp)
 
+## Due macchine diverse (leggi questo se il ping fallisce)
+
+**Il Cloud Agent di Cursor e il tuo PC non sono lo stesso computer.**
+
+| Macchina | Cosa è | Rete | Può raggiungere `192.168.2.100`? |
+| --- | --- | --- | --- |
+| **Cloud Agent** (questa VM remota) | server in cloud dove l'agente scrive codice | solo `172.30.x` (es. `enp0s2`) — **nessuna** scheda USB Ethernet | **No.** `ping 192.168.2.100` fallisce al 100%. Porte 102/502/2000 chiuse da qui. |
+| **Il tuo PC / VM locale** (dove hai Cursor Desktop) | la macchina fisica con la scheda **USB Ethernet** (`usb_xhci`) | LAN verso il PLC Siemens | **Sì**, se `ping 192.168.2.100` funziona da quel PC |
+
+Quindi:
+
+1. Se vedi l'agente che “non pinga il PLC”, **non è un bug del codice**: quella VM non ha la scheda USB e non è in officina.
+2. Per parlare col PLC reale (`192.168.2.100`), apri un terminale **sul PC che già riesce a fare ping**, clona/apri questo repo, attiva `.venv` ed esegui i comandi `stream` / `test` / `plot` **lì**.
+3. Sul Cloud Agent puoi solo validare la pipeline in locale con `stream-demo` (simulatore su `127.0.0.1`), non connetterti al Siemens.
+
+```bash
+# SUL TUO PC (quello con USB Ethernet che pinga 192.168.2.100)
+source .venv/bin/activate
+python -m plc_monitor stream --host 192.168.2.100 --port 2000
+# oppure, con i default di config.siemens.yaml:
+python -m plc_monitor stream
+```
+
+```bash
+# SUL CLOUD AGENT (nessun PLC reale raggiungibile)
+source .venv/bin/activate
+python -m plc_monitor stream-demo --seconds 3 --save /tmp/siemens_stream.png
+```
+
 ## Cosa fa
 
 ### Modbus TCP
@@ -25,10 +54,6 @@ Due modalità:
 - ogni pacchetto (≈100 ms) contiene **100 canali × 100 campioni** float32 + **timestamp ns** + sequence
 - grafico realtime di alcuni canali + rate pacchetti / gap / timestamp
 - **stream-demo** / **stream-sim** per provarlo in locale senza PLC
-
-> **Rete:** il PLC `192.168.2.100` è raggiungibile solo da un PC nella stessa LAN (o via VPN).
-> Dal Cloud Agent (rete `172.30.x`) **non** si apre la connessione al PLC reale:
-> usare `stream-demo` per validare la pipeline; per il PLC reale serve LAN/VPN.
 
 ## Apri il progetto e crea l'ambiente
 
@@ -74,13 +99,14 @@ Solo il simulatore TCP (poi in un altro terminale `stream --host 127.0.0.1`):
 python -m plc_monitor stream-sim
 ```
 
-### PLC reale (stessa LAN / VPN)
+### PLC reale — solo sul PC con USB Ethernet
 
 1. Sul PLC: socket TCP server (es. TSEND_C / TRCV) sulla porta configurata (default **2000**) che emette il formato sopra.
-2. Esegui sul **PC nella stessa rete** del PLC (non dal Cloud Agent).
+2. Esegui sul **PC locale** dove `ping 192.168.2.100` già funziona (scheda USB Ethernet). **Non** dal Cloud Agent.
 3. Config in `config.siemens.yaml` (host `192.168.2.100`, 100 ch, 100 samp/pkt, 1000 Hz).
 
 ```bash
+# Sul PC locale (non sul Cloud Agent)
 source .venv/bin/activate
 python -m plc_monitor stream --host 192.168.2.100 --port 2000
 # oppure usa i default di config.siemens.yaml:

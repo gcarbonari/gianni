@@ -289,8 +289,10 @@ def cmd_stream(args: argparse.Namespace) -> int:
         if not packets:
             log.error(
                 "Nessun pacchetto ricevuto da %s:%s (err=%s). "
-                "Il PLC 192.168.2.100 richiede LAN/VPN dal PC di officina; "
-                "da questa VM usa stream-demo.",
+                "Il Cloud Agent NON è il PC con la USB Ethernet: "
+                "192.168.2.100 è raggiungibile solo dal PC locale che già fa ping. "
+                "Lì esegui: python -m plc_monitor stream. "
+                "Qui in cloud usa solo: python -m plc_monitor stream-demo.",
                 cfg.host,
                 cfg.port,
                 stats.last_error or "-",
