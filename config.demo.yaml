@@ -1,0 +1,48 @@
+# Simulatore locale (senza hardware):  python -m plc_monitor demo
+plc:
+  host: 127.0.0.1
+  port: 5020
+  unit_id: 1
+  timeout: 2.0
+  poll_ms: 200
+
+plot:
+  title: Segnali PLC (demo)
+  window_seconds: 30
+
+csv:
+  enabled: false
+  path: segnali.csv
+
+signals:
+  - name: Temperatura
+    table: holding
+    address: 0
+    dtype: float32
+    word_order: abcd
+    scale: 1.0
+    offset: 0.0
+    unit: "°C"
+
+  - name: Pressione
+    table: holding
+    address: 2
+    dtype: float32
+    word_order: abcd
+    scale: 1.0
+    offset: 0.0
+    unit: bar
+
+  - name: Velocita
+    table: holding
+    address: 4
+    dtype: uint16
+    scale: 1.0
+    offset: 0.0
+    unit: rpm
+
+  - name: Allarme
+    table: coil
+    address: 0
+    dtype: bool
+    unit: ""

@@ -1,0 +1,20 @@
+# Stream Siemens / TCP custom verso il PLC.
+# Ogni 100 ms: 100 canali × 100 campioni @ 1000 Hz + timestamp.
+#
+# Da un PC nella stessa LAN del PLC:
+#   python -m plc_monitor stream --host 192.168.2.100 --port 2000
+#
+# Demo locale (senza PLC):
+#   python -m plc_monitor stream-demo
+
+stream:
+  host: 192.168.2.100
+  port: 2000
+  timeout: 3.0
+  channels: 100
+  samples_per_packet: 100   # 1000 Hz × 0.1 s
+  sample_hz: 1000
+  packet_ms: 100
+  plot_channels: [0, 1, 2, 3]   # canali da disegnare (max consigliato 4-8)
+  window_packets: 50
+  title: "Siemens 192.168.2.100 — 100 ch @ 1000 Hz"
