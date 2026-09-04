@@ -32,9 +32,10 @@ python -m plc_monitor stream
 ```
 
 ```bash
-# SUL CLOUD AGENT (nessun PLC reale raggiungibile)
+# SUL CLOUD AGENT (nessun PLC reale raggiungibile) — finestra live matplotlib
 source .venv/bin/activate
-python -m plc_monitor stream-demo --seconds 3 --save /tmp/siemens_stream.png
+python -m plc_monitor stream-demo
+# (opzionale, solo headless/CI: --seconds 3 --save /tmp/siemens_stream.png)
 ```
 
 ## Cosa fa
@@ -88,8 +89,10 @@ Formato pacchetto (little-endian): header 24 byte (`PLCP` + version + n_ch + n_s
 
 ```bash
 source .venv/bin/activate
+# Apre la finestra matplotlib LIVE (~10 Hz / refresh 100 ms = packet_ms).
+# Non usare --save/--seconds se vuoi il grafico realtime.
 python -m plc_monitor stream-demo
-# headless / CI:
+# headless / CI (PNG statico, non live):
 python -m plc_monitor stream-demo --seconds 3 --save /tmp/siemens_stream.png
 ```
 

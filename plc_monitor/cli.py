@@ -279,6 +279,7 @@ def cmd_stream(args: argparse.Namespace) -> int:
             channels_to_show=list(cfg.plot_channels),
             sample_hz=cfg.sample_hz,
             window_packets=cfg.window_packets,
+            packet_ms=cfg.packet_ms,
             save_path=args.save,
             seconds=args.seconds,
             title=cfg.title,

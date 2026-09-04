@@ -24,16 +24,24 @@ def run_stream_plot(
     channels_to_show: list[int] | None = None,
     sample_hz: float = 1000.0,
     window_packets: int = 50,
+    packet_ms: float = 100.0,
     save_path: str | None = None,
     seconds: float | None = None,
     title: str = "Stream PLC Siemens",
 ) -> Path | None:
-    """Mostra fino a 4 canali + stato pacchetti (seq, timestamp, rate)."""
+    """Mostra fino a 4 canali + stato pacchetti (seq, timestamp, rate).
+
+    Di default apre una finestra matplotlib live aggiornata ogni ``packet_ms``
+    (≈100 ms / 10 Hz). Usa ``save_path`` / ``seconds`` solo per headless/CI.
+    """
     if _need_agg(save_path):
         matplotlib.use("Agg")
 
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
+
+    # Allinea il refresh del grafico al passo pacchetto (default 100 ms ≈ 10 Hz).
+    interval_ms = max(int(round(packet_ms)), 1)
 
     show = channels_to_show or [0, 1, 2, 3]
     n = len(show)
@@ -99,14 +107,16 @@ def run_stream_plot(
             f"seq={last.sequence}  ts_ns={last.timestamp_ns}  ts_ms={ts_ms:.3f}  "
             f"ch={last.channels} samp={last.samples}  "
             f"rate={stats.rate_hz:.1f} pkt/s  gaps={stats.gaps}  "
-            f"bytes={stats.bytes_rx}  err={stats.last_error or '-'}"
+            f"bytes={stats.bytes_rx}  err={stats.last_error or '-'}  "
+            f"refresh={interval_ms}ms"
         )
 
     if save_path or seconds is not None:
         duration = seconds if seconds is not None else 5.0
         deadline = time.monotonic() + duration
+        sleep_s = max(interval_ms / 1000.0, 0.01)
         while time.monotonic() < deadline:
-            time.sleep(0.05)
+            time.sleep(sleep_s)
             _draw(0)
         if save_path:
             out = Path(save_path)
@@ -117,7 +127,8 @@ def run_stream_plot(
         plt.close(fig)
         return None
 
-    animation = FuncAnimation(fig, _draw, interval=50, cache_frame_data=False)
+    # Finestra live (default): FuncAnimation ≈ packet_ms (100 ms → ~10 Hz).
+    animation = FuncAnimation(fig, _draw, interval=interval_ms, cache_frame_data=False)
     plt.show()
     _ = animation
     return None
