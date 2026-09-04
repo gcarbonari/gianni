@@ -15,11 +15,28 @@ Usa **Modbus TCP** (porta 502 di solito): è il protocollo Ethernet più diffuso
 - può salvare CSV e PNG
 - include un **simulatore** per provarlo senza hardware
 
-## Installazione
+## Apri il progetto e crea l'ambiente
+
+Dalla cartella del repository (in Cursor o nel terminale):
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+chmod +x scripts/setup_env.sh
+./scripts/setup_env.sh
+source .venv/bin/activate
+```
+
+Lo script crea le directory, il virtualenv `.venv`, scarica le librerie da `requirements.txt` e punta l'interprete Python del workspace a `.venv/bin/python` (vedi `.vscode/settings.json`).
+
+Serve **Python 3.10+**. Se manca:
+
+- macOS: `brew install python@3.12` oppure l'installer da https://www.python.org/downloads/
+- Windows: stesso installer; poi `.venv\Scripts\activate` al posto di `source`
+
+A mano, equivalente:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
