@@ -1,0 +1,29 @@
+# Profilo di test: sottoinsieme di tag che QUESTA sequence usa.
+# Il catalogo completo sta nel DBC/ICD; qui solo ciò che il test deve vedere
+# come variabili TestStand. I burst 1 kHz vanno in "blocks", non tra gli scalari.
+
+name: vehicle_smoke
+root: StationGlobals.DC
+
+# Elenco esplicito (sequence stabile da un DUT all'altro)
+require:
+  - veh.EEC1.EngineSpeed
+  - veh.CCVS.WheelBasedSpeed
+  - avionics.heading
+  - plc.Temperatura
+
+# In alternativa o in più: glob sul catalogo (comodo in debug / HMI)
+# patterns:
+#   - veh.EEC1.*
+
+# Burst analogici: FetchBlock, non StationGlobals scalari
+# blocks:
+#   - siemens.ch00
+
+limits:
+  veh.EEC1.EngineSpeed:
+    min: 0
+    max: 8000
+  plc.Temperatura:
+    min: -20
+    max: 120
