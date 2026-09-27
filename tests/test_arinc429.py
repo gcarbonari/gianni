@@ -29,8 +29,8 @@ def test_icd_encode_decode() -> None:
     icd = load_icd("databases/arinc429.yaml")
     heading = icd.get_by_name("heading")
     assert heading is not None
-    word = ArincWord(word=icd.encode(heading, 180.0))
+    word = ArincWord(word=icd.encode(heading, 90.0))
     spec, value, fields = icd.decode(word)
     assert spec.name == "heading"
-    assert value == 180.0
+    assert value == 90.0
     assert fields["parity_ok"] is True

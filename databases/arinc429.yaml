@@ -21,7 +21,7 @@ labels:
   - label: "206"
     name: heading
     encoding: bnr
-    bits: 15
+    bits: 16
     resolution: 0.01
     unit: deg
     period_ms: 50
