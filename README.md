@@ -1,6 +1,7 @@
 # Monitor PLC via Modbus TCP + stream Siemens realtime
 
-Programmino Python per **leggere e graficizzare segnali da un PLC** su TCP/IP.
+Programmino Python per **leggere e graficizzare segnali da un PLC** su TCP/IP, più un **data center** a moduli innestabili (CAN/J1939, ARINC 429, PLC) verso client HMI.
+
 
 Due modalità:
 
@@ -182,7 +183,62 @@ stream:
   window_packets: 50
 ```
 
+## Data center (moduli CAN / J1939 / ARINC / PLC)
+
+Accentratore di dati: ogni **centralina** è un modulo innestabile. Il veicolo o l’aereo sta nel **database** (DBC / ICD), non nel codice. I client (HMI, TestStand, script) vedono solo tag normalizzati.
+
+```
+CAN/J1939 (DBC) ─┐
+ARINC 429 (ICD) ─┼─► TagBus ─► snapshot / subscribe / JSON-lines ─► HMI, TestStand, Python
+PLC Modbus/stream┘
+```
+
+Principi:
+
+1. **Modulo = transport + decoder + database.** Aggiungere un protocollo = una classe `ProtocolAdapter` + una riga in `data_center/registry.py`.
+2. **Niente logica veicolo nel Python.** Segnali CAN da `.dbc`, label ARINC da `databases/arinc429.yaml`, registri PLC da `config.yaml`.
+3. **Un bus solo.** Gli adapter pubblicano `TagUpdate` (`nome`, valore, timestamp, quality, source). I burst 1 kHz vanno in `DataBlock` (`fetch_block`).
+4. **Client disaccoppiati.** API in-process (`DataCenter.bus`) oppure gateway TCP JSON-lines (una riga JSON per messaggio). Un HMI può iscriversi a `veh.*` con `min_interval_ms: 100` senza saturare.
+
+### Demo senza hardware
+
+```bash
+source .venv/bin/activate
+python -m data_center demo --seconds 3
+python -m data_center serve            # gateway 127.0.0.1:8765
+```
+
+Client JSON (una riga per comando):
+
+```json
+{"op":"snapshot","pattern":"veh.*"}
+{"op":"subscribe","pattern":"avionics.*","min_interval_ms":100}
+{"op":"write","tag":"veh.EEC1.EngineSpeed","value":1500}
+{"op":"fetch_block","name":"siemens.ch00"}
+{"op":"health"}
+```
+
+### Come si aggiunge un modulo
+
+1. File database: DBC Vector per CAN/J1939, YAML ICD per ARINC 429.
+2. Transport: `simulated` / `loopback` oggi; per l’hardware si implementa `CanTransport` (Peak, Kvaser, SocketCAN) o `ArincTransport` (AIT, Ballard, Condor) e si registra il nome in `transport:`.
+3. Voce in `config.datacenter.yaml`:
+
+```yaml
+  - id: can_vehicle
+    type: can_j1939
+    prefix: veh
+    dbc: databases/vehicle.dbc
+    protocol: j1939          # oppure can per 11 bit
+    transport: simulated
+```
+
+J1939: il match è sul **PGN**, indipendente dal source address. ARINC 429: label in ottale, encoding `bnr` / `bcd` / `discrete`.
+
+Per collegare una scheda reale si lascia il decoder com’è e si sostituisce solo il transport (la stessa `inject`/`recv` path dei test).
+
 ## Test
+
 
 ```bash
 python -m pytest
