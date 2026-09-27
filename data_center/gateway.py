@@ -24,10 +24,12 @@ class JsonLinesGateway(threading.Thread):
         self._ready = threading.Event()
         self._health_fn = None
         self._write_fn = None
+        self._catalog_fn = None
 
-    def bind_handlers(self, *, health, write) -> None:
+    def bind_handlers(self, *, health, write, catalog=None) -> None:
         self._health_fn = health
         self._write_fn = write
+        self._catalog_fn = catalog
 
     def start_ready(self) -> None:
         self.start()
@@ -148,6 +150,10 @@ class JsonLinesGateway(threading.Thread):
         if op == "fetch_block":
             block = self.bus.fetch_block(str(msg.get("name") or ""))
             _send(conn, _block_dict(block))
+            return sub
+        if op == "catalog":
+            tags = self._catalog_fn() if self._catalog_fn is not None else []
+            _send(conn, {"op": "catalog", "tags": tags})
             return sub
         _send(conn, {"op": "error", "message": f"op sconosciuta: {op}"})
         return sub

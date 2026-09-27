@@ -8,6 +8,7 @@ from typing import Any
 
 from data_center.adapter import ProtocolAdapter
 from data_center.bus import TagBus
+from data_center.catalog import TagSpec, catalog_from_config
 from data_center.config import DataCenterConfig, load_datacenter_config
 from data_center.gateway import JsonLinesGateway
 from data_center.models import Health
@@ -39,7 +40,11 @@ class DataCenter:
             gw = JsonLinesGateway(
                 self.bus, host=self.config.gateway.host, port=self.config.gateway.port
             )
-            gw.bind_handlers(health=self.health, write=self.write)
+            gw.bind_handlers(
+                health=self.health,
+                write=self.write,
+                catalog=lambda: [item.as_dict() for item in self.catalog()],
+            )
             gw.start_ready()
             self.gateway = gw
         if self.config.stale_ms > 0:
@@ -54,6 +59,9 @@ class DataCenter:
             adapter.stop()
         if self.gateway is not None:
             self.gateway.stop()
+
+    def catalog(self, *, include_disabled: bool = False) -> list[TagSpec]:
+        return catalog_from_config(self.config, include_disabled=include_disabled)
 
     def health(self) -> list[Health]:
         return [adapter.health() for adapter in self.adapters]

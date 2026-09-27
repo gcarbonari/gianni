@@ -237,7 +237,27 @@ J1939: il match è sul **PGN**, indipendente dal source address. ARINC 429: labe
 
 Per collegare una scheda reale si lascia il decoder com’è e si sostituisce solo il transport (la stessa `inject`/`recv` path dei test).
 
+### HMI e TestStand: non creare a mano tutte le variabili
+
+Il problema tipico: ogni dispositivo ha **centinaia/migliaia di segnali diversi**. Non si copiano nel Sequence Editor.
+
+Tre strati:
+
+1. **Catalogo** — tutto ciò che il DUT espone, letto dal DBC/ICD/YAML (`python -m data_center catalog`). Serve all’HMI (lista tag, schermate auto).
+2. **Profilo di test** — il sottoinsieme che *questa* sequence usa (`profiles/vehicle_smoke.yaml`). Qualche decina di tag, non duemila.
+3. **Binding** — in ProcessSetup si creano solo quelle proprietà sotto `StationGlobals.DC…` (equivalente TestStand di `InsertIfMissing`). Se il DBC del DUT non ha un tag richiesto, il test **fallisce all’avvio**, non a metà.
+
+```bash
+python -m data_center catalog
+python -m data_center bind -p profiles/vehicle_smoke.yaml
+```
+
+I burst a 1 kHz (100 canali Siemens, analogici ARINC/CAN ad alta frequenza) **non** diventano variabili scalari: restano `fetch_block`. TestStand li prende on-demand.
+
+Cambia veicolo? Cambi DBC + eventuale profilo. La sequence resta `Leggi EngineSpeed / Confronta limiti`. L’HMI si iscrive a `veh.*` o costruisce la pagina dal catalogo.
+
 ## Test
+
 
 
 ```bash

@@ -39,6 +39,23 @@ def main(argv: list[str] | None = None) -> int:
     snap.add_argument("--seconds", type=float, default=2.0)
     snap.add_argument("--pattern", default="*")
 
+    cat = sub.add_parser("catalog", help="Elenca i tag dal DBC/ICD/YAML, senza hardware")
+    cat.add_argument("-c", "--config", default=DEFAULT_CONFIG)
+    cat.add_argument("--all", action="store_true", help="Include anche adapter disabilitati")
+
+    bind = sub.add_parser(
+        "bind",
+        help="Applica un profilo TestStand: solo i tag del test, errore se il DUT non li ha",
+    )
+    bind.add_argument("-c", "--config", default=DEFAULT_CONFIG)
+    bind.add_argument("-p", "--profile", default="profiles/vehicle_smoke.yaml")
+    bind.add_argument("--all", action="store_true")
+
+    plot = sub.add_parser("plot", help="Finestra HMI live dei tag dell'accentratore")
+    plot.add_argument("-c", "--config", default=DEFAULT_CONFIG)
+    plot.add_argument("--save", help="Salva un PNG invece di aprire la finestra")
+    plot.add_argument("--seconds", type=float, default=None)
+
     args = parser.parse_args(argv)
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -50,6 +67,12 @@ def main(argv: list[str] | None = None) -> int:
         return _demo(args.config, args.seconds)
     if args.command == "snapshot":
         return _snapshot(args.config, args.seconds, args.pattern)
+    if args.command == "catalog":
+        return _catalog(args.config, args.all)
+    if args.command == "bind":
+        return _bind(args.config, args.profile, args.all)
+    if args.command == "plot":
+        return _plot(args.config, args.save, args.seconds)
     return 1
 
 
@@ -105,6 +128,60 @@ def _snapshot(config_path: str, seconds: float, pattern: str) -> int:
         payload = [upd.as_dict() for upd in dc.bus.snapshot(pattern).values()]
         json.dump(payload, sys.stdout, indent=2, default=str)
         sys.stdout.write("\n")
+    finally:
+        dc.stop()
+    return 0
+
+
+def _catalog(config_path: str, include_disabled: bool) -> int:
+    from data_center.catalog import catalog_from_config
+    from data_center.config import load_datacenter_config
+
+    cfg = load_datacenter_config(config_path)
+    tags = catalog_from_config(cfg, include_disabled=include_disabled)
+    json.dump([t.as_dict() for t in tags], sys.stdout, indent=2)
+    sys.stdout.write("\n")
+    return 0
+
+
+def _bind(config_path: str, profile_path: str, include_disabled: bool) -> int:
+    from data_center.catalog import catalog_from_config
+    from data_center.config import load_datacenter_config
+    from data_center.teststand_bind import BindError, MemoryGlobals, bind_profile, load_profile
+
+    cfg = load_datacenter_config(config_path)
+    catalog = catalog_from_config(cfg, include_disabled=include_disabled)
+    profile = load_profile(profile_path)
+    try:
+        bound = bind_profile(catalog, profile)
+    except BindError as exc:
+        json.dump({"ok": False, "missing": exc.missing}, sys.stdout, indent=2)
+        sys.stdout.write("\n")
+        return 2
+    globals_tree = MemoryGlobals()
+    globals_tree.create_from_bind(bound)
+    json.dump(
+        {
+            "ok": True,
+            "profile": profile.name,
+            "root": profile.root,
+            "signals": [item.as_dict() for item in bound],
+            "station_globals": globals_tree.as_dict(),
+        },
+        sys.stdout,
+        indent=2,
+    )
+    sys.stdout.write("\n")
+    return 0
+
+
+def _plot(config_path: str, save_path: str | None, seconds: float | None) -> int:
+    from data_center.hmi_plot import run_hmi_plot
+
+    dc = _boot(config_path)
+    try:
+        dc.wait_tags(count=4, timeout=5.0)
+        run_hmi_plot(dc, save_path=save_path, seconds=seconds)
     finally:
         dc.stop()
     return 0
