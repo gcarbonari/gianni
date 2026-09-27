@@ -1,0 +1,44 @@
+# Data center: accentratore di bus di campo → client HMI / TestStand / script.
+# Ogni adapter è un modulo innestabile. Il veicolo/aereo sta nel database (DBC/ICD),
+# non nel codice Python.
+
+data_center:
+  name: officina
+  history: 512
+  stale_ms: 3000
+  gateway:
+    enabled: true
+    host: 127.0.0.1
+    port: 8765
+
+adapters:
+  - id: can_vehicle
+    type: can_j1939
+    enabled: true
+    prefix: veh
+    dbc: databases/vehicle.dbc
+    protocol: j1939
+    transport: simulated
+    period_ms: 20
+
+  - id: arinc_avionics
+    type: arinc429
+    enabled: true
+    prefix: avionics
+    icd: databases/arinc429.yaml
+    transport: simulated
+
+  - id: plc_modbus
+    type: plc_modbus
+    enabled: true
+    prefix: plc
+    config: config.demo.yaml
+    transport: simulated
+
+  - id: plc_siemens
+    type: plc_stream
+    enabled: false
+    prefix: siemens
+    config: config.siemens.yaml
+    transport: simulated
+    plot_channels: [0, 1, 2, 3]

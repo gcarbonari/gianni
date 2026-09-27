@@ -1,0 +1,41 @@
+# ICD ARINC 429 — le centraline avioniche si descrivono qui, non nel codice.
+# label in ottale (convenzione ARINC).
+
+labels:
+  - label: "310"
+    name: latitude
+    encoding: bnr
+    bits: 19
+    resolution: 0.0001
+    unit: deg
+    period_ms: 80
+
+  - label: "311"
+    name: longitude
+    encoding: bnr
+    bits: 19
+    resolution: 0.0001
+    unit: deg
+    period_ms: 80
+
+  - label: "206"
+    name: heading
+    encoding: bnr
+    bits: 16
+    resolution: 0.01
+    unit: deg
+    period_ms: 50
+
+  - label: "203"
+    name: airspeed
+    encoding: bnr
+    bits: 14
+    resolution: 0.0625
+    unit: knot
+    period_ms: 50
+
+  - label: "270"
+    name: discretes
+    encoding: discrete
+    bits: 19
+    period_ms: 100

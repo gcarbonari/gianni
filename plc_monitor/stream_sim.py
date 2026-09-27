@@ -56,6 +56,9 @@ class PacketStreamServer(threading.Thread):
             server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind((self.host, self.port))
+            bound_host, bound_port = server.getsockname()[:2]
+            self.host = bound_host
+            self.port = int(bound_port)
             server.listen(1)
             server.settimeout(0.5)
             self._server = server

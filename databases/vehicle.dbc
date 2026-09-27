@@ -1,0 +1,20 @@
+VERSION ""
+
+
+NS_ :
+
+BS_:
+
+BU_: ECM BCM
+
+BO_ 217056256 EEC1: 8 ECM
+ SG_ EngineSpeed : 24|16@1+ (0.125,0) [0|8031.875] "rpm" Vector__XXX
+ SG_ EngineTorque : 8|8@1+ (1,-125) [-125|125] "%" Vector__XXX
+
+BO_ 419361024 CCVS: 8 ECM
+ SG_ WheelBasedSpeed : 8|16@1+ (0.00390625,0) [0|250.996] "km/h" Vector__XXX
+ SG_ BrakeSwitch : 28|2@1+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 256 Lights: 8 BCM
+ SG_ LowBeam : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ HighBeam : 1|1@1+ (1,0) [0|1] "" Vector__XXX
