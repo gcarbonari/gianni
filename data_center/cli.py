@@ -51,6 +51,11 @@ def main(argv: list[str] | None = None) -> int:
     bind.add_argument("-p", "--profile", default="profiles/vehicle_smoke.yaml")
     bind.add_argument("--all", action="store_true")
 
+    plot = sub.add_parser("plot", help="Finestra HMI live dei tag dell'accentratore")
+    plot.add_argument("-c", "--config", default=DEFAULT_CONFIG)
+    plot.add_argument("--save", help="Salva un PNG invece di aprire la finestra")
+    plot.add_argument("--seconds", type=float, default=None)
+
     args = parser.parse_args(argv)
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -66,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
         return _catalog(args.config, args.all)
     if args.command == "bind":
         return _bind(args.config, args.profile, args.all)
+    if args.command == "plot":
+        return _plot(args.config, args.save, args.seconds)
     return 1
 
 
@@ -165,6 +172,18 @@ def _bind(config_path: str, profile_path: str, include_disabled: bool) -> int:
         indent=2,
     )
     sys.stdout.write("\n")
+    return 0
+
+
+def _plot(config_path: str, save_path: str | None, seconds: float | None) -> int:
+    from data_center.hmi_plot import run_hmi_plot
+
+    dc = _boot(config_path)
+    try:
+        dc.wait_tags(count=4, timeout=5.0)
+        run_hmi_plot(dc, save_path=save_path, seconds=seconds)
+    finally:
+        dc.stop()
     return 0
 
 
