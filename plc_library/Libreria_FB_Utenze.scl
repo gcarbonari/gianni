@@ -1,0 +1,1292 @@
+(*
+==============================================================================
+  Libreria_FB_Utenze.scl
+  Sorgente SCL per TIA Portal (S7-1500 / S7-1200, accesso ottimizzato).
+
+  Architettura
+  ------------
+  - Un FB per tipo di oggetto (utenza).
+  - Ogni FB ha una macchina a stati e un banco allarmi locale.
+  - Reset selettivo: singola utenza oppure singolo allarme.
+  - Reset totale: tutte le utenze, tutti gli allarmi.
+  - Un DB istanza per ogni oggetto in campo.
+  - Un solo DB di scambio ("DB_ScambioHMI") come facciata verso HMI/supervisione:
+      comandi IN  (start, stop, reset, indici)
+      stati   OUT (marcia, pronto, allarme, misure)
+
+  Importazione in TIA Portal
+  --------------------------
+  Esterno > Aggiungi file utente > questo .scl > Genera blocchi dal sorgente.
+  Poi in OB1 istanziare un IDB per ogni utenza e passare lo slot del DB di scambio.
+
+  Tipi oggetto (campo Testata.Tipo) per dispatch generico:
+    1 Valvola
+    2 PID
+    3 Sensore pressione
+    4 Sensore posizione
+    10 Circuito offline / chiller
+    11 Condizionamento olio
+    12 Serbatoio
+    13 Sistema di bloccaggio
+==============================================================================
+*)
+
+// -----------------------------------------------------------------------------
+// Costanti di stato (macchina a stati comune)
+// -----------------------------------------------------------------------------
+//  0 STOP     - ferma, senza allarme
+//  1 PRONTO   - condizioni OK, in attesa comando
+//  2 AVVIO    - transitorio di partenza
+//  3 MARCIA   - esercizio
+//  4 ARRESTO  - transitorio di fermata
+//  5 ALLARME  - blocco; richiede reset
+//  6 MANUALE  - comando diretto HMI (bypass sequenza)
+
+// -----------------------------------------------------------------------------
+// UDT: testata generica. Il campo Tipo permette al router di smistare i comandi.
+// -----------------------------------------------------------------------------
+TYPE "UDT_TestataOggetto"
+VERSION : 0.1
+   STRUCT
+      Id : Int;              // Indice utenza nel DB di scambio (1..16)
+      Tipo : Int;            // Vedi tabella tipi sopra
+      Nome : String[24];     // Etichetta HMI
+      Abilitato : Bool;      // FALSE = slot vuoto, ignorato dal router
+   END_STRUCT;
+END_TYPE
+
+// -----------------------------------------------------------------------------
+// UDT: un allarme. ResetSingolo azzera Memoria se la condizione fisica è caduta.
+// -----------------------------------------------------------------------------
+TYPE "UDT_Allarme"
+VERSION : 0.1
+   STRUCT
+      Codice : Int;          // Codice allarme (1000+valvola, 2000+PID, ...)
+      Attivo : Bool;         // Condizione fisica presente in questo ciclo
+      Memoria : Bool;        // Latch: resta fino a reset selettivo/totale
+      Inibito : Bool;        // HMI può mascherare (non usato dal reset)
+      Descrizione : String[40];
+   END_STRUCT;
+END_TYPE
+
+TYPE "UDT_BancoAllarmi"
+VERSION : 0.1
+   STRUCT
+      Lista : Array[1..8] of "UDT_Allarme";
+      Qualsiasi : Bool;      // OR di tutte le Memoria
+      PrimoCodice : Int;     // Primo allarme in memoria (per HMI)
+      NAttivi : Int;
+   END_STRUCT;
+END_TYPE
+
+// -----------------------------------------------------------------------------
+// UDT: comandi dal posto operatore verso UNA utenza (facciata HMI).
+// -----------------------------------------------------------------------------
+TYPE "UDT_ComandoUtenza"
+VERSION : 0.1
+   STRUCT
+      Start : Bool;
+      Stop : Bool;
+      Manuale : Bool;
+      ResetUnita : Bool;     // Reset di tutti gli allarmi di questa utenza
+      ResetAllarme : Bool;   // Reset del solo allarme IdxAllarme
+      IdxAllarme : Int;      // 1..8
+      Setpoint : Real;       // Uso PID / livello / pressione
+      ComandoManuale : Bool; // Apertura/avvio forzato in MANUALE
+   END_STRUCT;
+END_TYPE
+
+TYPE "UDT_StatoUtenza"
+VERSION : 0.1
+   STRUCT
+      Stato : Int;           // Macchina a stati
+      Pronto : Bool;
+      Marcia : Bool;
+      Allarme : Bool;
+      Misura : Real;         // Processo (bar, mm, °C, %)
+      Uscita : Real;         // Comando attuatore (0..100 % o 0/1)
+      TestoStato : String[24];
+   END_STRUCT;
+END_TYPE
+
+// Slot generico nel DB di scambio: HMI vede sempre la stessa struttura.
+TYPE "UDT_SlotOggetto"
+VERSION : 0.1
+   STRUCT
+      Testata : "UDT_TestataOggetto";
+      Cmd : "UDT_ComandoUtenza";
+      Sts : "UDT_StatoUtenza";
+      Allarmi : "UDT_BancoAllarmi";
+   END_STRUCT;
+END_TYPE
+
+// -----------------------------------------------------------------------------
+// Facciata HMI: un solo DB. Comandi globali IN, stato impianto OUT, 16 slot.
+// -----------------------------------------------------------------------------
+TYPE "UDT_ScambioHMI"
+VERSION : 0.1
+   STRUCT
+      // --- Comandi supervisione (pulse, il PLC li consuma) ---
+      StartImpianto : Bool;
+      StopImpianto : Bool;
+      ResetTotale : Bool;    // Tutte le utenze, tutti gli allarmi
+      ResetUnita : Bool;     // Tutti gli allarmi dello slot IdxUnita
+      ResetAllarme : Bool;   // Un allarme: IdxUnita + IdxAllarme
+      IdxUnita : Int;        // 1..16
+      IdxAllarme : Int;      // 1..8
+      Emergenza : Bool;      // Sempre priorità: ferma tutto
+      // --- Stato impianto verso HMI ---
+      ImpiantoPronto : Bool;
+      ImpiantoMarcia : Bool;
+      ImpiantoAllarme : Bool;
+      NAllarmi : Int;
+      // --- Oggetti ---
+      Slot : Array[1..16] of "UDT_SlotOggetto";
+   END_STRUCT;
+END_TYPE
+
+
+// =============================================================================
+// FC_GestioneAllarmi
+// Aggiorna il banco: latch, conteggio, reset selettivo / totale.
+// Condizioni[] = TRUE se l'allarme fisico è presente in questo ciclo.
+// =============================================================================
+FUNCTION "FC_GestioneAllarmi" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      ResetTotale : Bool;    // Pulisce tutto il banco
+      ResetUnita : Bool;     // Pulisce tutte le memorie di QUESTA utenza
+      ResetSingolo : Bool;   // Pulisce solo Idx
+      Idx : Int;
+   END_VAR
+   VAR_IN_OUT
+      Banco : "UDT_BancoAllarmi";
+      Condizioni : Array[1..8] of Bool;
+   END_VAR
+   VAR_TEMP
+      i : Int;
+      n : Int;
+      primo : Int;
+   END_VAR
+BEGIN
+   n := 0;
+   primo := 0;
+
+   FOR i := 1 TO 8 DO
+      Banco.Lista[i].Attivo := Condizioni[i];
+      IF Condizioni[i] THEN
+         Banco.Lista[i].Memoria := TRUE;
+      END_IF;
+
+      // Reset totale o di unità: solo se la condizione fisica è caduta.
+      IF ResetTotale OR ResetUnita THEN
+         IF NOT Banco.Lista[i].Attivo THEN
+            Banco.Lista[i].Memoria := FALSE;
+         END_IF;
+      END_IF;
+
+      // Reset singolo allarme (Idx 1..8).
+      IF ResetSingolo AND (i = Idx) THEN
+         IF NOT Banco.Lista[i].Attivo THEN
+            Banco.Lista[i].Memoria := FALSE;
+         END_IF;
+      END_IF;
+
+      IF Banco.Lista[i].Memoria THEN
+         n := n + 1;
+         IF primo = 0 THEN
+            primo := Banco.Lista[i].Codice;
+         END_IF;
+      END_IF;
+   END_FOR;
+
+   Banco.NAttivi := n;
+   Banco.Qualsiasi := n > 0;
+   Banco.PrimoCodice := primo;
+END_FUNCTION
+
+
+// =============================================================================
+// FC_TestoStato — etichetta HMI dalla macchina a stati.
+// =============================================================================
+FUNCTION "FC_TestoStato" : String
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Stato : Int;
+   END_VAR
+BEGIN
+   CASE Stato OF
+      0: "FC_TestoStato" := 'STOP';
+      1: "FC_TestoStato" := 'PRONTO';
+      2: "FC_TestoStato" := 'AVVIO';
+      3: "FC_TestoStato" := 'MARCIA';
+      4: "FC_TestoStato" := 'ARRESTO';
+      5: "FC_TestoStato" := 'ALLARME';
+      6: "FC_TestoStato" := 'MANUALE';
+   ELSE
+      "FC_TestoStato" := '?';
+   END_CASE;
+END_FUNCTION
+
+
+// =============================================================================
+// FB_Valvola  (Tipo = 1)
+// Oggetto semplice: valvola ON/OFF con finecorsa e timeout di manovra.
+// Interfaccia processo: ApriCmd / ChiudiCmd verso uscite, FcAperto / FcChiuso in ingresso.
+// Allarmi: 1001 timeout apertura, 1002 timeout chiusura, 1003 incoerenza FC.
+// =============================================================================
+FUNCTION_BLOCK "FB_Valvola"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      FcAperto : Bool;
+      FcChiuso : Bool;
+      ResetTotale : Bool;
+      Tmanovra : Time := T#8s;
+   END_VAR
+   VAR_OUTPUT
+      ApriY : Bool;
+      ChiudiY : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Tmr : TON;
+      Cond : Array[1..8] of Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 1;
+   Slot.Allarmi.Lista[1].Codice := 1001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Timeout apertura valvola';
+   Slot.Allarmi.Lista[2].Codice := 1002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Timeout chiusura valvola';
+   Slot.Allarmi.Lista[3].Codice := 1003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Finecorsa incoerenti';
+
+   // Condizioni allarme (valutate ogni ciclo, latch nel FC).
+   Cond[1] := ApriY AND NOT FcAperto AND Tmr.Q;
+   Cond[2] := ChiudiY AND NOT FcChiuso AND Tmr.Q;
+   Cond[3] := FcAperto AND FcChiuso;
+   Cond[4] := FALSE;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato THEN
+      Slot.Sts.Stato := 0;
+      ApriY := FALSE;
+      ChiudiY := FALSE;
+   ELSIF Slot.Allarmi.Qualsiasi THEN
+      Slot.Sts.Stato := 5;
+      ApriY := FALSE;
+      ChiudiY := FALSE;
+   ELSIF Slot.Cmd.Manuale THEN
+      Slot.Sts.Stato := 6;
+      ApriY := Slot.Cmd.ComandoManuale;
+      ChiudiY := NOT Slot.Cmd.ComandoManuale;
+   ELSE
+      CASE Slot.Sts.Stato OF
+         0, 1: // STOP / PRONTO
+            ApriY := FALSE;
+            ChiudiY := TRUE;
+            IF FcChiuso THEN
+               Slot.Sts.Stato := 1;
+            END_IF;
+            IF Slot.Cmd.Start THEN
+               Slot.Sts.Stato := 2;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+         2: // AVVIO = apertura
+            ApriY := TRUE;
+            ChiudiY := FALSE;
+            Tmr(IN := TRUE, PT := Tmanovra);
+            IF FcAperto THEN
+               Slot.Sts.Stato := 3;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+         3: // MARCIA = aperta
+            ApriY := TRUE;
+            ChiudiY := FALSE;
+            IF Slot.Cmd.Stop THEN
+               Slot.Sts.Stato := 4;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+         4: // ARRESTO = chiusura
+            ApriY := FALSE;
+            ChiudiY := TRUE;
+            Tmr(IN := TRUE, PT := Tmanovra);
+            IF FcChiuso THEN
+               Slot.Sts.Stato := 1;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_CASE;
+   END_IF;
+
+   Slot.Sts.Pronto := (Slot.Sts.Stato = 1);
+   Slot.Sts.Marcia := (Slot.Sts.Stato = 3) OR (Slot.Sts.Stato = 6 AND ApriY);
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   IF ApriY THEN
+      Slot.Sts.Uscita := 100.0;
+   ELSE
+      Slot.Sts.Uscita := 0.0;
+   END_IF;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_RegolatorePID  (Tipo = 2)
+// Oggetto semplice: anello PID su misura di processo.
+// Allarmi: 2001 misura fuori scala, 2002 saturazione uscita prolungata, 2003 scostamento.
+// =============================================================================
+FUNCTION_BLOCK "FB_RegolatorePID"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      Pv : Real;             // Variabile di processo
+      Kp : Real := 1.0;
+      Ti : Real := 10.0;     // secondi; 0 = no integrale
+      Td : Real := 0.0;
+      PvMin : Real := 0.0;
+      PvMax : Real := 100.0;
+      ResetTotale : Bool;
+      Ciclo_s : Real := 0.1; // tempo di ciclo OB (s)
+   END_VAR
+   VAR_OUTPUT
+      Cv : Real;             // 0..100 %
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Integrale : Real;
+      PvPrec : Real;
+      Tsat : Real;
+      Cond : Array[1..8] of Bool;
+      err : Real;
+      deriv : Real;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 2;
+   Slot.Allarmi.Lista[1].Codice := 2001;
+   Slot.Allarmi.Lista[1].Descrizione := 'PV fuori scala';
+   Slot.Allarmi.Lista[2].Codice := 2002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Uscita PID saturata';
+   Slot.Allarmi.Lista[3].Codice := 2003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Errore di inseguimento';
+
+   Slot.Sts.Misura := Pv;
+   err := Slot.Cmd.Setpoint - Pv;
+   Cond[1] := (Pv < PvMin) OR (Pv > PvMax);
+   Cond[2] := (ABS(Cv - 0.0) < 0.1) OR (ABS(Cv - 100.0) < 0.1);
+   Cond[3] := ABS(err) > (0.2 * (PvMax - PvMin)) AND (Slot.Sts.Stato = 3);
+   Cond[4] := FALSE;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato THEN
+      Slot.Sts.Stato := 0;
+      Integrale := 0.0;
+      Cv := 0.0;
+   ELSIF Slot.Allarmi.Qualsiasi THEN
+      Slot.Sts.Stato := 5;
+      Cv := 0.0;
+   ELSIF Slot.Cmd.Manuale THEN
+      Slot.Sts.Stato := 6;
+      Cv := Slot.Cmd.Setpoint; // in manuale setpoint = uscita %
+   ELSE
+      CASE Slot.Sts.Stato OF
+         0, 1:
+            Cv := 0.0;
+            Integrale := 0.0;
+            Slot.Sts.Stato := 1;
+            IF Slot.Cmd.Start THEN
+               Slot.Sts.Stato := 2;
+            END_IF;
+         2:
+            Slot.Sts.Stato := 3;
+         3:
+            IF Ti > 0.001 THEN
+               Integrale := Integrale + (err * Ciclo_s / Ti);
+            END_IF;
+            // Anti-windup semplice
+            IF Integrale > 100.0 THEN
+               Integrale := 100.0;
+            ELSIF Integrale < -100.0 THEN
+               Integrale := -100.0;
+            END_IF;
+            IF Ciclo_s > 0.0 THEN
+               deriv := Td * (Pv - PvPrec) / Ciclo_s;
+            ELSE
+               deriv := 0.0;
+            END_IF;
+            Cv := Kp * (err + Integrale - deriv);
+            IF Cv > 100.0 THEN
+               Cv := 100.0;
+            ELSIF Cv < 0.0 THEN
+               Cv := 0.0;
+            END_IF;
+            IF Slot.Cmd.Stop THEN
+               Slot.Sts.Stato := 4;
+            END_IF;
+         4:
+            Cv := 0.0;
+            Integrale := 0.0;
+            Slot.Sts.Stato := 1;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_CASE;
+   END_IF;
+
+   PvPrec := Pv;
+   Slot.Sts.Uscita := Cv;
+   Slot.Sts.Pronto := (Slot.Sts.Stato = 1);
+   Slot.Sts.Marcia := (Slot.Sts.Stato = 3);
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_SensorePressione  (Tipo = 3)
+// Oggetto semplice: condizionamento misura 4-20 mA / 0-10 V già in REAL ingegnerizzato.
+// Allarmi: 3001 sotto minimo, 3002 sopra massimo, 3003 derivata eccessiva (guasto).
+// =============================================================================
+FUNCTION_BLOCK "FB_SensorePressione"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      RawBar : Real;
+      MinBar : Real := 0.0;
+      MaxBar : Real := 16.0;
+      ResetTotale : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Prec : Real;
+      Cond : Array[1..8] of Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 3;
+   Slot.Allarmi.Lista[1].Codice := 3001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Pressione bassa';
+   Slot.Allarmi.Lista[2].Codice := 3002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Pressione alta';
+   Slot.Allarmi.Lista[3].Codice := 3003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Salto misura (guasto sensore)';
+
+   Slot.Sts.Misura := RawBar;
+   Cond[1] := Enable AND (RawBar < MinBar);
+   Cond[2] := Enable AND (RawBar > MaxBar);
+   Cond[3] := Enable AND (ABS(RawBar - Prec) > 0.5 * (MaxBar - MinBar));
+   Cond[4] := FALSE;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   Prec := RawBar;
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato THEN
+      Slot.Sts.Stato := 0;
+   ELSIF Slot.Allarmi.Qualsiasi THEN
+      Slot.Sts.Stato := 5;
+   ELSE
+      Slot.Sts.Stato := 3; // il sensore è sempre in "marcia" se sano
+   END_IF;
+
+   Slot.Sts.Pronto := NOT Slot.Allarmi.Qualsiasi AND Enable;
+   Slot.Sts.Marcia := Slot.Sts.Pronto;
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   Slot.Sts.Uscita := RawBar;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_SensorePosizione  (Tipo = 4)
+// Oggetto semplice: posizione mm / % con soglie e finestra di target.
+// Allarmi: 4001 sotto corsa, 4002 sopra corsa, 4003 non in posa a target.
+// =============================================================================
+FUNCTION_BLOCK "FB_SensorePosizione"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      PosMm : Real;
+      CorsaMin : Real := 0.0;
+      CorsaMax : Real := 100.0;
+      Tolleranza : Real := 1.0;
+      ResetTotale : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Cond : Array[1..8] of Bool;
+      inPosa : Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 4;
+   Slot.Allarmi.Lista[1].Codice := 4001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Posizione sotto corsa';
+   Slot.Allarmi.Lista[2].Codice := 4002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Posizione oltre corsa';
+   Slot.Allarmi.Lista[3].Codice := 4003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Target non raggiunto';
+
+   Slot.Sts.Misura := PosMm;
+   inPosa := ABS(PosMm - Slot.Cmd.Setpoint) <= Tolleranza;
+   Cond[1] := Enable AND (PosMm < CorsaMin);
+   Cond[2] := Enable AND (PosMm > CorsaMax);
+   Cond[3] := Enable AND (Slot.Sts.Stato = 3) AND NOT inPosa AND Slot.Cmd.Start;
+   Cond[4] := FALSE;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato THEN
+      Slot.Sts.Stato := 0;
+   ELSIF Slot.Allarmi.Qualsiasi THEN
+      Slot.Sts.Stato := 5;
+   ELSIF inPosa THEN
+      Slot.Sts.Stato := 3;
+   ELSE
+      Slot.Sts.Stato := 1;
+   END_IF;
+
+   Slot.Sts.Pronto := Slot.Sts.Stato <> 5;
+   Slot.Sts.Marcia := inPosa;
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   Slot.Sts.Uscita := PosMm;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_CircuitoOffline  (Tipo = 10)  — chiller / circuito fuori linea
+// Oggetto complesso: pompa + valvola + consenso temperatura.
+// Allarmi: 10001 temp alta, 10002 portata bassa, 10003 pompa termica, 10004 timeout avvio.
+// =============================================================================
+FUNCTION_BLOCK "FB_CircuitoOffline"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      TempC : Real;
+      PortataOk : Bool;
+      TermicaPompa : Bool;
+      ResetTotale : Bool;
+      TempMax : Real := 45.0;
+      TAvvio : Time := T#15s;
+   END_VAR
+   VAR_OUTPUT
+      PompaY : Bool;
+      ValvolaY : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Tmr : TON;
+      Cond : Array[1..8] of Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 10;
+   Slot.Allarmi.Lista[1].Codice := 10001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Temperatura chiller alta';
+   Slot.Allarmi.Lista[2].Codice := 10002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Portata insufficiente';
+   Slot.Allarmi.Lista[3].Codice := 10003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Termica pompa chiller';
+   Slot.Allarmi.Lista[4].Codice := 10004;
+   Slot.Allarmi.Lista[4].Descrizione := 'Timeout avvio circuito';
+
+   Slot.Sts.Misura := TempC;
+   Cond[1] := TempC > TempMax;
+   Cond[2] := PompaY AND NOT PortataOk AND Tmr.Q;
+   Cond[3] := TermicaPompa;
+   Cond[4] := (Slot.Sts.Stato = 2) AND Tmr.Q;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato OR Slot.Allarmi.Qualsiasi THEN
+      IF Slot.Allarmi.Qualsiasi THEN
+         Slot.Sts.Stato := 5;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_IF;
+      PompaY := FALSE;
+      ValvolaY := FALSE;
+   ELSIF Slot.Cmd.Manuale THEN
+      Slot.Sts.Stato := 6;
+      PompaY := Slot.Cmd.ComandoManuale;
+      ValvolaY := Slot.Cmd.ComandoManuale;
+   ELSE
+      CASE Slot.Sts.Stato OF
+         0, 1:
+            PompaY := FALSE;
+            ValvolaY := FALSE;
+            Slot.Sts.Stato := 1;
+            IF Slot.Cmd.Start THEN
+               Slot.Sts.Stato := 2;
+               Tmr(IN := FALSE, PT := TAvvio);
+            END_IF;
+         2: // apre valvola, poi pompa
+            ValvolaY := TRUE;
+            PompaY := TRUE;
+            Tmr(IN := TRUE, PT := TAvvio);
+            IF PortataOk THEN
+               Slot.Sts.Stato := 3;
+               Tmr(IN := FALSE, PT := TAvvio);
+            END_IF;
+         3:
+            ValvolaY := TRUE;
+            PompaY := TRUE;
+            IF Slot.Cmd.Stop THEN
+               Slot.Sts.Stato := 4;
+            END_IF;
+         4:
+            PompaY := FALSE;
+            ValvolaY := FALSE;
+            Slot.Sts.Stato := 1;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_CASE;
+   END_IF;
+
+   Slot.Sts.Pronto := (Slot.Sts.Stato = 1);
+   Slot.Sts.Marcia := (Slot.Sts.Stato = 3);
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   IF PompaY THEN
+      Slot.Sts.Uscita := 100.0;
+   ELSE
+      Slot.Sts.Uscita := 0.0;
+   END_IF;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_CondizionamentoOlio  (Tipo = 11)
+// Oggetto complesso: riscaldo / raffreddamento olio + pompa circolazione.
+// Allarmi: 11001 temp bassa, 11002 temp alta, 11003 livello basso, 11004 filtro sporco.
+// =============================================================================
+FUNCTION_BLOCK "FB_CondizionamentoOlio"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      TempOlio : Real;
+      LivelloOk : Bool;
+      FiltroSporco : Bool;
+      ResetTotale : Bool;
+      TempMin : Real := 30.0;
+      TempMax : Real := 60.0;
+      TempTarget : Real := 45.0;
+   END_VAR
+   VAR_OUTPUT
+      PompaY : Bool;
+      RiscaldoY : Bool;
+      RaffreddY : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Cond : Array[1..8] of Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 11;
+   Slot.Allarmi.Lista[1].Codice := 11001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Olio troppo freddo';
+   Slot.Allarmi.Lista[2].Codice := 11002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Olio troppo caldo';
+   Slot.Allarmi.Lista[3].Codice := 11003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Livello olio basso';
+   Slot.Allarmi.Lista[4].Codice := 11004;
+   Slot.Allarmi.Lista[4].Descrizione := 'Filtro olio sporco';
+
+   Slot.Sts.Misura := TempOlio;
+   Cond[1] := Enable AND (TempOlio < TempMin);
+   Cond[2] := Enable AND (TempOlio > TempMax);
+   Cond[3] := Enable AND NOT LivelloOk;
+   Cond[4] := Enable AND FiltroSporco;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato OR Slot.Allarmi.Qualsiasi THEN
+      IF Slot.Allarmi.Qualsiasi THEN
+         Slot.Sts.Stato := 5;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_IF;
+      PompaY := FALSE;
+      RiscaldoY := FALSE;
+      RaffreddY := FALSE;
+   ELSIF Slot.Cmd.Manuale THEN
+      Slot.Sts.Stato := 6;
+      PompaY := Slot.Cmd.ComandoManuale;
+   ELSIF Slot.Cmd.Start THEN
+      Slot.Sts.Stato := 3;
+      PompaY := TRUE;
+      RiscaldoY := TempOlio < TempTarget - 1.0;
+      RaffreddY := TempOlio > TempTarget + 1.0;
+   ELSE
+      Slot.Sts.Stato := 1;
+      PompaY := FALSE;
+      RiscaldoY := FALSE;
+      RaffreddY := FALSE;
+   END_IF;
+
+   Slot.Sts.Pronto := LivelloOk AND NOT Slot.Allarmi.Qualsiasi;
+   Slot.Sts.Marcia := PompaY;
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   Slot.Sts.Uscita := TempOlio;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_Serbatoio  (Tipo = 12)
+// Oggetto complesso: livello, carico, scarico, soglie H/L.
+// Allarmi: 12001 livello basso, 12002 livello alto, 12003 timeout carico.
+// =============================================================================
+FUNCTION_BLOCK "FB_Serbatoio"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      LivelloPct : Real;     // 0..100
+      ResetTotale : Bool;
+      Lmin : Real := 10.0;
+      Lmax : Real := 90.0;
+      Tcarico : Time := T#60s;
+   END_VAR
+   VAR_OUTPUT
+      CaricoY : Bool;
+      ScaricoY : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Tmr : TON;
+      Cond : Array[1..8] of Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 12;
+   Slot.Allarmi.Lista[1].Codice := 12001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Livello serbatoio basso';
+   Slot.Allarmi.Lista[2].Codice := 12002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Livello serbatoio alto';
+   Slot.Allarmi.Lista[3].Codice := 12003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Timeout carico serbatoio';
+
+   Slot.Sts.Misura := LivelloPct;
+   Cond[1] := Enable AND (LivelloPct < Lmin);
+   Cond[2] := Enable AND (LivelloPct > Lmax);
+   Cond[3] := CaricoY AND Tmr.Q;
+   Cond[4] := FALSE;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato OR Slot.Allarmi.Qualsiasi THEN
+      IF Slot.Allarmi.Qualsiasi THEN
+         Slot.Sts.Stato := 5;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_IF;
+      CaricoY := FALSE;
+      ScaricoY := FALSE;
+   ELSIF Slot.Cmd.Manuale THEN
+      Slot.Sts.Stato := 6;
+      CaricoY := Slot.Cmd.ComandoManuale;
+      ScaricoY := NOT Slot.Cmd.ComandoManuale AND (LivelloPct > Lmin);
+   ELSE
+      CASE Slot.Sts.Stato OF
+         0, 1:
+            CaricoY := FALSE;
+            ScaricoY := FALSE;
+            Slot.Sts.Stato := 1;
+            IF Slot.Cmd.Start THEN
+               Slot.Sts.Stato := 2;
+               Tmr(IN := FALSE, PT := Tcarico);
+            END_IF;
+         2: // carico fino a setpoint
+            CaricoY := LivelloPct < Slot.Cmd.Setpoint;
+            ScaricoY := FALSE;
+            Tmr(IN := CaricoY, PT := Tcarico);
+            IF NOT CaricoY THEN
+               Slot.Sts.Stato := 3;
+               Tmr(IN := FALSE, PT := Tcarico);
+            END_IF;
+         3:
+            CaricoY := FALSE;
+            ScaricoY := FALSE;
+            IF Slot.Cmd.Stop THEN
+               Slot.Sts.Stato := 4;
+            END_IF;
+         4:
+            ScaricoY := LivelloPct > Lmin;
+            CaricoY := FALSE;
+            IF LivelloPct <= Lmin THEN
+               Slot.Sts.Stato := 1;
+            END_IF;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_CASE;
+   END_IF;
+
+   Slot.Sts.Pronto := (Slot.Sts.Stato = 1);
+   Slot.Sts.Marcia := (Slot.Sts.Stato = 2) OR (Slot.Sts.Stato = 3);
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   Slot.Sts.Uscita := LivelloPct;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_SistemaBloccaggio  (Tipo = 13)  — clamping
+// Oggetto complesso: sequenza sblocca / blocca con finecorsa e consenso pezzo.
+// Allarmi: 13001 timeout blocco, 13002 timeout sblocco, 13003 pezzo assente,
+//          13004 pressione blocco bassa.
+// =============================================================================
+FUNCTION_BLOCK "FB_SistemaBloccaggio"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      Enable : Bool;
+      FcBloccato : Bool;
+      FcSbloccato : Bool;
+      PezzoPresente : Bool;
+      PressioneOk : Bool;
+      ResetTotale : Bool;
+      Tmanovra : Time := T#5s;
+   END_VAR
+   VAR_OUTPUT
+      BloccaY : Bool;
+      SbloccaY : Bool;
+   END_VAR
+   VAR_IN_OUT
+      Slot : "UDT_SlotOggetto";
+   END_VAR
+   VAR
+      Tmr : TON;
+      Cond : Array[1..8] of Bool;
+   END_VAR
+BEGIN
+   Slot.Testata.Tipo := 13;
+   Slot.Allarmi.Lista[1].Codice := 13001;
+   Slot.Allarmi.Lista[1].Descrizione := 'Timeout bloccaggio';
+   Slot.Allarmi.Lista[2].Codice := 13002;
+   Slot.Allarmi.Lista[2].Descrizione := 'Timeout sbloccaggio';
+   Slot.Allarmi.Lista[3].Codice := 13003;
+   Slot.Allarmi.Lista[3].Descrizione := 'Pezzo assente';
+   Slot.Allarmi.Lista[4].Codice := 13004;
+   Slot.Allarmi.Lista[4].Descrizione := 'Pressione blocco bassa';
+
+   Cond[1] := BloccaY AND NOT FcBloccato AND Tmr.Q;
+   Cond[2] := SbloccaY AND NOT FcSbloccato AND Tmr.Q;
+   Cond[3] := (Slot.Sts.Stato = 2) AND NOT PezzoPresente;
+   Cond[4] := BloccaY AND NOT PressioneOk;
+   Cond[5] := FALSE;
+   Cond[6] := FALSE;
+   Cond[7] := FALSE;
+   Cond[8] := FALSE;
+
+   "FC_GestioneAllarmi"(ResetTotale := ResetTotale,
+                        ResetUnita := Slot.Cmd.ResetUnita,
+                        ResetSingolo := Slot.Cmd.ResetAllarme,
+                        Idx := Slot.Cmd.IdxAllarme,
+                        Banco := Slot.Allarmi,
+                        Condizioni := Cond);
+
+   IF NOT Enable OR NOT Slot.Testata.Abilitato OR Slot.Allarmi.Qualsiasi THEN
+      IF Slot.Allarmi.Qualsiasi THEN
+         Slot.Sts.Stato := 5;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_IF;
+      BloccaY := FALSE;
+      SbloccaY := TRUE;
+   ELSIF Slot.Cmd.Manuale THEN
+      Slot.Sts.Stato := 6;
+      BloccaY := Slot.Cmd.ComandoManuale;
+      SbloccaY := NOT Slot.Cmd.ComandoManuale;
+   ELSE
+      CASE Slot.Sts.Stato OF
+         0, 1:
+            BloccaY := FALSE;
+            SbloccaY := TRUE;
+            IF FcSbloccato THEN
+               Slot.Sts.Stato := 1;
+            END_IF;
+            IF Slot.Cmd.Start AND PezzoPresente THEN
+               Slot.Sts.Stato := 2;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+         2:
+            BloccaY := TRUE;
+            SbloccaY := FALSE;
+            Tmr(IN := TRUE, PT := Tmanovra);
+            IF FcBloccato THEN
+               Slot.Sts.Stato := 3;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+         3:
+            BloccaY := TRUE;
+            SbloccaY := FALSE;
+            Slot.Sts.Misura := 1.0; // 1 = bloccato
+            IF Slot.Cmd.Stop THEN
+               Slot.Sts.Stato := 4;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+         4:
+            BloccaY := FALSE;
+            SbloccaY := TRUE;
+            Tmr(IN := TRUE, PT := Tmanovra);
+            IF FcSbloccato THEN
+               Slot.Sts.Stato := 1;
+               Tmr(IN := FALSE, PT := Tmanovra);
+            END_IF;
+      ELSE
+         Slot.Sts.Stato := 0;
+      END_CASE;
+   END_IF;
+
+   Slot.Sts.Pronto := (Slot.Sts.Stato = 1);
+   Slot.Sts.Marcia := (Slot.Sts.Stato = 3);
+   Slot.Sts.Allarme := Slot.Allarmi.Qualsiasi;
+   IF BloccaY THEN
+      Slot.Sts.Uscita := 100.0;
+   ELSE
+      Slot.Sts.Uscita := 0.0;
+   END_IF;
+   Slot.Sts.TestoStato := "FC_TestoStato"(Stato := Slot.Sts.Stato);
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// FB_RouterScambio
+// Dispatch dei comandi HMI verso gli slot, in base a IdxUnita e Tipo.
+// Non esegue la logica di processo: smista reset / start-stop globali
+// e calcola lo stato impianto (OR degli slot abilitati).
+// Chiamare in OB1 PRIMA o DOPO gli FB utenza, una volta a ciclo.
+// =============================================================================
+FUNCTION_BLOCK "FB_RouterScambio"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_IN_OUT
+      Scambio : "UDT_ScambioHMI";
+   END_VAR
+   VAR_TEMP
+      i : Int;
+      nAll : Int;
+      anyRun : Bool;
+      anyRdy : Bool;
+      anyAlm : Bool;
+      idxU : Int;
+      idxA : Int;
+   END_VAR
+BEGIN
+   idxU := Scambio.IdxUnita;
+   idxA := Scambio.IdxAllarme;
+   IF idxU < 1 THEN
+      idxU := 1;
+   ELSIF idxU > 16 THEN
+      idxU := 16;
+   END_IF;
+   IF idxA < 1 THEN
+      idxA := 1;
+   ELSIF idxA > 8 THEN
+      idxA := 8;
+   END_IF;
+
+   nAll := 0;
+   anyRun := FALSE;
+   anyRdy := TRUE;
+   anyAlm := FALSE;
+
+   FOR i := 1 TO 16 DO
+      IF Scambio.Slot[i].Testata.Abilitato THEN
+         // Start / stop impianto propagati a tutte le utenze abilitate.
+         IF Scambio.StartImpianto THEN
+            Scambio.Slot[i].Cmd.Start := TRUE;
+         END_IF;
+         IF Scambio.StopImpianto OR Scambio.Emergenza THEN
+            Scambio.Slot[i].Cmd.Stop := TRUE;
+            Scambio.Slot[i].Cmd.Start := FALSE;
+         END_IF;
+
+         // Reset totale: tutte le unità.
+         IF Scambio.ResetTotale THEN
+            Scambio.Slot[i].Cmd.ResetUnita := TRUE;
+         END_IF;
+
+         // Reset selettivo di una sola utenza (campo Tipo disponibile per HMI).
+         IF Scambio.ResetUnita AND (i = idxU) THEN
+            Scambio.Slot[i].Cmd.ResetUnita := TRUE;
+         END_IF;
+
+         // Reset di un singolo allarme di una singola utenza.
+         IF Scambio.ResetAllarme AND (i = idxU) THEN
+            Scambio.Slot[i].Cmd.ResetAllarme := TRUE;
+            Scambio.Slot[i].Cmd.IdxAllarme := idxA;
+         END_IF;
+
+         nAll := nAll + Scambio.Slot[i].Allarmi.NAttivi;
+         IF Scambio.Slot[i].Sts.Marcia THEN
+            anyRun := TRUE;
+         END_IF;
+         IF NOT Scambio.Slot[i].Sts.Pronto AND NOT Scambio.Slot[i].Sts.Marcia THEN
+            anyRdy := FALSE;
+         END_IF;
+         IF Scambio.Slot[i].Sts.Allarme THEN
+            anyAlm := TRUE;
+         END_IF;
+      END_IF;
+   END_FOR;
+
+   Scambio.NAllarmi := nAll;
+   Scambio.ImpiantoMarcia := anyRun AND NOT Scambio.Emergenza;
+   Scambio.ImpiantoAllarme := anyAlm OR Scambio.Emergenza;
+   Scambio.ImpiantoPronto := anyRdy AND NOT anyAlm AND NOT Scambio.Emergenza;
+
+   // Consumo impulsi HMI (edge): l'HMI deve rialzare il bit al ciclo successivo.
+   Scambio.StartImpianto := FALSE;
+   Scambio.StopImpianto := FALSE;
+   Scambio.ResetTotale := FALSE;
+   Scambio.ResetUnita := FALSE;
+   Scambio.ResetAllarme := FALSE;
+END_FUNCTION_BLOCK
+
+
+// =============================================================================
+// DB di scambio — UNICA facciata HMI / supervisione / TestStand.
+// HMI scrive i comandi (StartImpianto, Reset*, Idx*).
+// HMI e TestStand leggono Impianto* e Slot[i].Sts / Allarmi.
+// Un IDB per ogni FB utenza vive a parte (vedi esempi sotto).
+// =============================================================================
+DATA_BLOCK "DB_ScambioHMI"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR
+      Dati : "UDT_ScambioHMI";
+   END_VAR
+BEGIN
+   Dati.IdxUnita := 1;
+   Dati.IdxAllarme := 1;
+
+   // Esempio di mappa utenze (da adattare all'impianto reale).
+   Dati.Slot[1].Testata.Id := 1;
+   Dati.Slot[1].Testata.Tipo := 1;
+   Dati.Slot[1].Testata.Nome := 'Valvola olio';
+   Dati.Slot[1].Testata.Abilitato := TRUE;
+
+   Dati.Slot[2].Testata.Id := 2;
+   Dati.Slot[2].Testata.Tipo := 2;
+   Dati.Slot[2].Testata.Nome := 'PID temperatura';
+   Dati.Slot[2].Testata.Abilitato := TRUE;
+
+   Dati.Slot[3].Testata.Id := 3;
+   Dati.Slot[3].Testata.Tipo := 3;
+   Dati.Slot[3].Testata.Nome := 'PT circuito';
+   Dati.Slot[3].Testata.Abilitato := TRUE;
+
+   Dati.Slot[4].Testata.Id := 4;
+   Dati.Slot[4].Testata.Tipo := 4;
+   Dati.Slot[4].Testata.Nome := 'Posizione slitta';
+   Dati.Slot[4].Testata.Abilitato := TRUE;
+
+   Dati.Slot[5].Testata.Id := 5;
+   Dati.Slot[5].Testata.Tipo := 10;
+   Dati.Slot[5].Testata.Nome := 'Chiller offline';
+   Dati.Slot[5].Testata.Abilitato := TRUE;
+
+   Dati.Slot[6].Testata.Id := 6;
+   Dati.Slot[6].Testata.Tipo := 11;
+   Dati.Slot[6].Testata.Nome := 'Condiz. olio';
+   Dati.Slot[6].Testata.Abilitato := TRUE;
+
+   Dati.Slot[7].Testata.Id := 7;
+   Dati.Slot[7].Testata.Tipo := 12;
+   Dati.Slot[7].Testata.Nome := 'Serbatoio olio';
+   Dati.Slot[7].Testata.Abilitato := TRUE;
+
+   Dati.Slot[8].Testata.Id := 8;
+   Dati.Slot[8].Testata.Tipo := 13;
+   Dati.Slot[8].Testata.Nome := 'Bloccaggio pezzo';
+   Dati.Slot[8].Testata.Abilitato := TRUE;
+END_DATA_BLOCK
+
+
+// -----------------------------------------------------------------------------
+// Esempi di DB istanza (uno per oggetto). In TIA si possono anche creare
+// automaticamente "multi-instance" in un FB impianto.
+// I valori iniziali restano di default; il campo Slot è IN_OUT sul DB scambio.
+// -----------------------------------------------------------------------------
+DATA_BLOCK "IDB_Valvola_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_Valvola"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_PID_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_RegolatorePID"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_PT_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_SensorePressione"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_POS_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_SensorePosizione"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_Chiller_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_CircuitoOffline"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_Olio_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_CondizionamentoOlio"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_Serbatoio_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_Serbatoio"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_Clamp_1"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_SistemaBloccaggio"
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK "IDB_Router"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"FB_RouterScambio"
+BEGIN
+END_DATA_BLOCK
+
+
+(*
+------------------------------------------------------------------------------
+Esempio di chiamata in OB1 (ciclo):
+
+   "IDB_Router"(Scambio := "DB_ScambioHMI".Dati);
+
+   "IDB_Valvola_1"(Enable := TRUE,
+                   FcAperto := I_FcAperto,
+                   FcChiuso := I_FcChiuso,
+                   ResetTotale := "DB_ScambioHMI".Dati.Slot[1].Cmd.ResetUnita,
+                   Slot := "DB_ScambioHMI".Dati.Slot[1],
+                   ApriY => Q_Apri,
+                   ChiudiY => Q_Chiudi);
+
+   // HMI:
+   //  Reset totale  -> Dati.ResetTotale := TRUE
+   //  Reset utenza  -> Dati.IdxUnita := 5; Dati.ResetUnita := TRUE
+   //  Reset allarme -> Dati.IdxUnita := 5; Dati.IdxAllarme := 2; Dati.ResetAllarme := TRUE
+   // TestStand code module: stesse aree del DB di scambio (tag identici all'HMI).
+------------------------------------------------------------------------------
+*)
