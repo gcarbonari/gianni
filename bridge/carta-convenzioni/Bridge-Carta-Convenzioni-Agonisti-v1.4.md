@@ -2,7 +2,7 @@
 
 Bozza da tavolo. Evoluzione della preagonisti v5 / agonisti v1–v1.3: Bergen e Truscott 12+, 1NT standard su 1M, Landy, Ghestem, Lebensohl, difesa Multi, Mathe, **DOPI/ROPI su interferenza al 4NT**.  
 La v5 non si tocca: resta la carta del 3° anno / preagonisti.  
-**v1.4** = v1.3 + chiarimenti (15–17 = apertura 1NT; Truscott se loro 2NT → 3♣; XX dopo Contro; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M). PDF A4 compatto come v1/v1.3.
+**v1.4** = v1.3 + chiarimenti (15–17 = apertura 1NT; Truscott se loro 2NT → 3♣; XX dopo Contro; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M; Bergen spento da 2♦). PDF A4 compatto come v1/v1.3.
 
 | Campo | Contenuto |
 | --- | --- |
@@ -271,6 +271,17 @@ Esempio: `1♠ – (X) – XX` = «11+ senza 3 picche; se parlano, contratti».
 | ≥2♦ (2♦ / 2♥ / 2♠) | **No** | 3♣ e 3♦ **naturali**. Fit invitante → surlicita; fit 4ª 12+ → 2NT (se libero); barrage → 3M/4M |
 
 Sintesi da tavolo: **X o overcall a liv. 1 → Bergen pieno. Dopo 2♣ → solo 3♦ Bergen. Da 2♦ in su → Bergen spento.**
+
+**Da 2♦ in su, 3♣ e 3♦ restano i minori.** Se restassero Bergen non potresti più mostrare fiori o quadri. Esempio: `1♥ – (2♠) – 3♦` = quadri, non «ho 4 cuori».
+
+**Fit quarto con Bergen spento.**
+
+| 2M ancora dicibile? | Col fit quarto |
+| --- | --- |
+| Sì — es. `1♥ – (2♦) – 2♥` | **2M**. Ci stanno il fit terzo 5–10 e il fit quarto 7–10. Non si distingue. |
+| No — es. `1♥ – (2♠) – ?` | **3M** = solo barrage 3–7 (il partner passa). **2NT** = fit quarto 12+, se è libero. **Surlicita** (`3♠`) = invito col fit, circa 11. Con 8–10: se la mano è solo distribuzione → 3M; se vuoi ancora invitare → surlicita. Non c’è un gradino in mezzo. |
+
+Dopo il loro **2NT** non cambia: 3♣ = Truscott 12+, 3♦ = quadri (§1.3.0).
 
 #### 1.3.1 Libere (nuovo colore — potevamo Passare; non è NFB)
 
@@ -954,7 +965,7 @@ Fit nobile: 1NT standard, Bergen e Truscott 12+ (dal 10b, senza il 1NT forzante)
 | N5 | Interventi | Ghestem al posto di Michaels. Landy + transfer su 1NT. Lebensohl sul nostro 1NT e dopo X delle loro weak 2. Difesa Multi, barrage a 3, Namyats. Su 1♣ forte loro: Mathe (4.7.1). |
 | N6 | 1NT vs 1M con 5M | Come v5 |
 | N7–N11 | 2/1, libere, Stay, cue | Come v5 |
-| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott; XX senza fit; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M via 1NT |
+| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott (3♦ resta naturale); XX senza fit; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M via 1NT; da 2♦ Bergen spento → 2M se dicibile, altrimenti barrage o surlicita |
 
 ### E. Alternative non firmate in v1.4
 
