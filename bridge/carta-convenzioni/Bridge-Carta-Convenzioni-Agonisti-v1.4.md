@@ -1,10 +1,8 @@
 # Carta delle convenzioni — Agonisti — v1.4
 
-**COPIA DI LAVORO — modifica questo file.** La v1.3 resta intatta. Quando hai finito, dimmelo in chat: chiudo PDF e cartella come v1.4.
-
 Bozza da tavolo. Evoluzione della preagonisti v5 / agonisti v1–v1.3: Bergen e Truscott 12+, 1NT standard su 1M, Landy, Ghestem, Lebensohl, difesa Multi, Mathe, **DOPI/ROPI su interferenza al 4NT**.  
 La v5 non si tocca: resta la carta del 3° anno / preagonisti.  
-**v1.4** = v1.3 + tue modifiche.
+**v1.4** = v1.3 + chiarimenti (15–17 = apertura 1NT; Truscott se loro 2NT → 3♣; XX dopo Contro; trial ≠ corta; 3CF senza «direzione»). PDF A4 compatto come v1/v1.3.
 
 | Campo | Contenuto |
 | --- | --- |
@@ -185,7 +183,7 @@ Su 3NT il rispondente con il minimo (12, o 11 pulito) può passare; con extra ce
 
 | Sequenza | Replica apertore | Significato | Alert |
 | --- | --- | --- | --- |
-| 1M – 2M | Pass / Trial / 4M | ~12–14 / invito 15–17 (Trial: Alert) / manche ~18–20. L’appoggio è 5–10: il trial è come in v5 (il partner può avere 5–6). | |
+| 1M – 2M | Pass / Trial / 4M | ~12–14 / invito 15–17 (Trial: Alert) / manche ~18–20. L’appoggio è 5–10 (il partner può avere il minimo della fascia). | |
 | 1♦ – 2♦ | Pass / nuovo o NT | Minimo / extra (il Trial è solo sul fit nobile) | |
 
 #### 1.2.6 D-bis. Dopo Bergen 3♣ / 3♦ (allegato 10b)
@@ -676,7 +674,7 @@ Due casi. Chiedere sempre cosa giocano.
 
 | Tipo | Come si riconosce | Esempio di mezzo | Alert |
 | --- | --- | --- | --- |
-| Competitivo | Vuole giocare quel contratto (lotta per il parziale); non a salto in appoggio | Rialzo semplice 3M in competizione | |
+| Competitivo | Vuole giocare quel contratto (lotta per il parziale); non a salto in appoggio | Rialzo **2M** in competizione (il **3M** è barrage, riga sotto) | |
 | Costruttivo | Vuole che la licita prosegua (invito/manche); mai «proposta di gioco» secca | Contro, surlicita, cambio forcing, XX | |
 | Interdittivo | Molte prese in attacco, poche in difesa; sempre a salto | Barrage / appoggio a salto → partner decide | |
 
@@ -764,7 +762,7 @@ Quando chiedete le chiavi con **4NT** e gli avversari parlano, le risposte 5♣/
 
 Poi i gradini successivi contano 2, 3, … chiavi, il più economici possibile.
 
-**Importante (v1.2):** con interferenza i numeri sono **esatti**. Contro/XX = **0 chiavi** (non «0 o 3»). Pass = **1 chiave** (non «1 o 4»). La coppia 0/3 e 1/4 della 3014 **vale solo senza interferenza** (§5.3).
+**Importante:** con interferenza i numeri sono **esatti**. Contro/XX = **0 chiavi** (non «0 o 3»). Pass = **1 chiave** (non «1 o 4»). La coppia 0/3 e 1/4 della 3014 **vale solo senza interferenza** (§5.3).
 
 #### 5.4.1 DOPI — loro licita a colore sul 4NT
 
@@ -815,7 +813,7 @@ Se il partner ha Passato (= 1 chiave) e a voi non basta, potete ancora concluder
    - Pass = 1  
    - 5♦ = 2  
    - 5♥ = 3  
-   - 5♠ = 4 (o 2+dama se avete accordo di spezzare; in v1.1 default: **numero**, poi capitano decide)
+   - 5♠ = 4 (o 2+dama se avete accordo di spezzare; default: **numero**, poi capitano decide)
 
 2. Atout ♥. Voi 4NT – (X) – ?  
    - XX = 0  
@@ -946,7 +944,7 @@ Fit nobile: 1NT standard, Bergen e Truscott 12+ (dal 10b, senza il 1NT forzante)
 | N5 | Interventi | Ghestem al posto di Michaels. Landy + transfer su 1NT. Lebensohl sul nostro 1NT e dopo X delle loro weak 2. Difesa Multi, barrage a 3, Namyats. Su 1♣ forte loro: Mathe (4.7.1). |
 | N6 | 1NT vs 1M con 5M | Come v5 |
 | N7–N11 | 2/1, libere, Stay, cue | Come v5 |
-| N12 | v1 → v1.3 | v1.1: XX/fit, Truscott, Bergen, DOPI. v1.2: 3M solo barrage dopo X; Bergen su 2♣ chiuso; DOPI esatto; surlicita a due usi; fasce e priorità attacco |
+| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott; XX senza fit; trial ≠ corta; 3CF senza «direzione» |
 
 ### E. Alternative non firmate in v1.4
 
