@@ -330,9 +330,17 @@ Nota: **2NT diretto su 1NT = transfer a ♦ (6+)**, non invito a 3NT.
 
 ### 2.1 Trial bid (licita d’aiuto / richiesta di fermo)
 
-Quando: fit nobile immediato a livello 2 (1M – 2M, fascia 5–10) e l’apertore ha mano d’invito (15–17 PO distributivi). Il rialzo a 3M «generico» non dice dove servono gli onori; il trial chiede se gli onori del partner si sposano col colore debole. Stesso trial dopo Bergen 3♣ se c’è spazio sotto 3M (D-bis). **Non dopo 2NT Truscott:** lì il nuovo è corta (D-ter).
+Quando: fit nobile immediato a livello 2 (1M – 2M, fascia 5–10) e l’apertore ha mano d’invito (15–17 PO distributivi). Il rialzo a 3M «generico» non dice dove servono gli onori; il trial chiede se gli onori del partner si sposano col colore debole. Stesso trial dopo Bergen 3♣ se c’è spazio sotto 3M (D-bis).
 
 Licita: nuovo colore a livello 3 (es. 1♥ – 2♥ – 3♣) = Trial bid.
+
+**«Non dopo 2NT Truscott»** = se il partner ha detto **2NT** (fit 4ª, **già 12+**, manche sicura), un nuovo colore dell’apertore **non** è trial (non chiede «andiamo a manche?»). È **corta** (singolo/vuoto) per lo slam — §1.2.7. Manche è già imposta; non serve l’invito.
+
+| Sequenza | Nuovo colore dell’apertore | Scopo |
+| --- | --- | --- |
+| 1♥ – 2♥ – **3♣** | **Trial** | Invito: hai aiuto a fiori? Poi 3♥ o 4♥ |
+| 1♥ – 3♣ Bergen – **3♦** (sotto 3♥) | **Trial** | Stesso, se c’è spazio |
+| 1♥ – **2NT** – **3♣** | **Corta a fiori**, non trial | Manche già sì; descrivi il singolo per lo slam |
 
 | Aspetto | Regola | Alert |
 | --- | --- | --- |
