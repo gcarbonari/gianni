@@ -240,7 +240,7 @@ Asta libera: risposte sopra. Fit 5ª in 5332 → scontare una presa; 4333 col fi
 
 **Se loro intervengono a 2NT** (di solito Unusual: due minori): tu **non** puoi dire 2NT (Truscott) e **non** esiste una surlicita “nel 2NT” come se fosse un colore.  
 Sostituto del Truscott: **3♣** = fit 4ª+ nel nobile d’apertura, **12+**, forcing manche (Alert). Poi 3M/4M come dopo Truscott.  
-3♦ = naturale. 3M = ancora barrage. 4M = a giocare (molte atout).
+**3♦ = Bergen** (fit 4ª, 10–11, Alert). In questa sequenza non è un colore a quadri. Il Bergen 7–9 non c’è: 3♣ è il Truscott 12+. 3M = ancora barrage (3–7). 4M = a giocare (molte atout).
 
 **Regola XX — solo dopo il loro Contro** (es. 1♥ – (X) – ?). Non dopo intervento a colore.
 
@@ -281,7 +281,7 @@ Sintesi da tavolo: **X o overcall a liv. 1 → Bergen pieno. Dopo 2♣ → solo 
 | Sì — es. `1♥ – (2♦) – 2♥` | **2M**. Ci stanno il fit terzo 5–10 e il fit quarto 7–10. Non si distingue. |
 | No — es. `1♥ – (2♠) – ?` | **3M** = solo barrage 3–7 (il partner passa). **2NT** = fit quarto 12+, se è libero. **Surlicita** (`3♠`) = invito col fit, circa 11. Con 8–10: se la mano è solo distribuzione → 3M; se vuoi ancora invitare → surlicita. Non c’è un gradino in mezzo. |
 
-Dopo il loro **2NT** non cambia: 3♣ = Truscott 12+, 3♦ = quadri (§1.3.0).
+Dopo il loro **2NT** (diverso da qui): **3♣** = Truscott 12+, **3♦ = Bergen** 10–11, non le quadri (§1.3.0).
 
 #### 1.3.1 Libere (nuovo colore — potevamo Passare; non è NFB)
 
@@ -965,7 +965,7 @@ Fit nobile: 1NT standard, Bergen e Truscott 12+ (dal 10b, senza il 1NT forzante)
 | N5 | Interventi | Ghestem al posto di Michaels. Landy + transfer su 1NT. Lebensohl sul nostro 1NT e dopo X delle loro weak 2. Difesa Multi, barrage a 3, Namyats. Su 1♣ forte loro: Mathe (4.7.1). |
 | N6 | 1NT vs 1M con 5M | Come v5 |
 | N7–N11 | 2/1, libere, Stay, cue | Come v5 |
-| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott (3♦ resta naturale); XX senza fit; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M via 1NT; da 2♦ Bergen spento → 2M se dicibile, altrimenti barrage o surlicita |
+| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott e 3♦ Bergen 10–11; XX senza fit; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M via 1NT; da 2♦ Bergen spento → 2M se dicibile, altrimenti barrage o surlicita |
 
 ### E. Alternative non firmate in v1.4
 
