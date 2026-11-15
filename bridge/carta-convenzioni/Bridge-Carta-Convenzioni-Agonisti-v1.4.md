@@ -122,10 +122,14 @@ Il rispondente è ancora capitano (non si è limitato), **salvo** le eccezioni d
 | Rever / salto in nuovo / rever a salto | Nuovo > guardia o salto in nuovo ~16–20; rever a salto ~18–20 | |
 | Rever in appoggio o auto-appoggio / 4M | Fit ~15–17; manche diretta ~18–20 | |
 
-**Bilanciata 15–17 dopo 1m – 1M:** **non** saltate a 2NT/3NT (quelli sono 18–20).  
-- Con fit 4ª → appoggio a livello di rever (~15–17).  
-- Senza fit → nuovo colore economico se esiste (anche minore di lavoro); altrimenti la descrizione meno bugiarda (ripetizione del minore se 5+).  
-Non esiste in questa carta un 2NT «da 15».
+**15–17 bilanciata = apertura 1NT, non replica dopo 1m.**  
+Con 15–17 PO **bilanciata** (4432 / 4333 / quinta minore, **senza 5M**) si apre **1NT**. Non si apre 1♣ né 1♦. Quindi la sequenza 1m – 1M **non** è “la via della 15–17 piatta”: quella mano è già a 1NT.
+
+Dopo **1m – 1M** le bilanciate dell’apertore sono solo due fasce:
+- **12–14** → replica **1NT**
+- **18–20** → salto **2NT** (nega 4ª nel magg. di risposta) o **3NT** (con 4ª)
+
+**Cosa resta a 15–17 dopo 1m:** solo mani **non** da 1NT (sbilanciate: 6ª minore, 5–4, singolo…). Si descrive: fit 4ª → appoggio (rever ~15–17); senza fit → nuovo colore o ripetizione del minore. **Non** saltare a 2NT/3NT: quelli sono 18–20. Non esiste un 2NT «da 15».
 
 #### 1.2.2 B. Replica a NT — 1NT su 1M standard + fasce su 1m
 
