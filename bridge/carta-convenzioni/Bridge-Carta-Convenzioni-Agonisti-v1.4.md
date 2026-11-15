@@ -358,9 +358,9 @@ Non confondere con trial (fit nobile a 2 + invito) né con cue (atout fissato + 
 | 3CF | Liv. 1 = F1; liv. 2 = FM | **Default = esplorazione** (chiede 3ª / fermo), non promette lunghezza. Se poi ripeti il 3CF o lo appoggi forte, allora era (anche) colore reale. Apertore: appoggia, NT, ripete, altro | Sì |
 | 4CF | Liv. 1 = F1; liv. 2+ = FM | A 2+ **non** promette il colore: chiede fermo per 3NT. Anche via per fissare atout in forcing (poi appoggio sotto manche) | Sì |
 
-Risposte tipiche dell’apertore su 4CF: 3NT = ho il fermo; altrimenti descrive (ripete, rialza, altro colore). Su 3CF a liv. 3 dell’apertore: spesso corto nel quarto.
+Dopo **4CF** l’apertore: **3NT** = ho il fermo nel 4° colore; se non ce l’ha, dice altro (alza il tuo colore, o un suo colore).
 
-Se il rispondente “chiude” a manche e l’apertore è ancora forte: riapre (su 3NT → 4NT quantitativo tip. 17+; su manche a colore → cue / RKCB).
+Se tu **chiudi a manche** (3NT o 4 a colore) e lui è ancora molto forte, può parlare ancora.
 
 ---
 
