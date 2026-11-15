@@ -354,15 +354,13 @@ Senza intervento. Contate i **colori già detti dalla vostra linea** (non quelli
 - **3CF** = nominate il **terzo** colore (ne avevate detti due).
 - **4CF** = nominate l’**ultimo** rimasto (ne avevate detti tre).
 
-**Ripetizione** = ridire **il tuo stesso** colore già nominato (es. `1♥ – 1♠ – 2♥`: l’apertore **ripete** le cuori). Non è un colore nuovo.
-
-**Di default il 3CF non è un colore vero** (non promette 4–5 carte): è una **licita d’attesa** per far descrivere l’apertore (fermo, 3ª, **ripetizione** del suo seme). Se poi **voi** ripetete il 3CF (dite di nuovo quel colore), allora era anche reale.
+**Di default il 3CF non è un colore vero** (non promette 4–5 carte): è una **licita d’attesa**. L’apertore descrive: 3NT col fermo, appoggio, o un altro colore.
 
 Non è trial (il trial è dopo **fit 2M**). Non è cue (la cue è con **atout già fissato** e obiettivo slam).
 
 **Esempi 3CF**
 - `1♣ – 1♥ – 2♣ – 2♦` → ♦ è il terzo colore (♣ e ♥ già detti). A **livello 2** = **forcing manche**.
-- `1♣ – 1♦ – 1♥` → ♥ è il terzo, ma a **livello 1** = solo **F1** (come 1♥ naturale a liv. 1): l’apertore appoggia con 4ª, dice 1NT se bilanciato, altrimenti ripete. **Non** è ancora FM.
+- `1♣ – 1♦ – 1♥` → ♥ è il terzo, ma a **livello 1** = solo **F1** (come 1♥ naturale a liv. 1): l’apertore appoggia con 4ª, dice 1NT se bilanciato, altrimenti descrive. **Non** è ancora FM.
 
 **Esempi 4CF**
 - `1♣ – 1♥ – 1♠ – 2♦` → ♦ è l’unico colore mai detto. A liv. 2 = **FM**, chiede soprattutto **fermo a ♦ per 3NT**. Non promette le quadri.
@@ -370,10 +368,10 @@ Non è trial (il trial è dopo **fit 2M**). Non è cue (la cue è con **atout gi
 
 | Convenzione | Forza | Cosa mostra / chiede | Alert |
 | --- | --- | --- | --- |
-| 3CF | Liv. 1 = F1; liv. 2 = FM | Default = esplorazione (3ª / fermo / direzione). Apertore: appoggia, NT, ripete, altro | Sì |
+| 3CF | Liv. 1 = F1; liv. 2 = FM | Default = esplorazione (3ª / fermo / direzione). Apertore: appoggia, NT, altro | Sì |
 | 4CF | Liv. 1 = F1; liv. 2+ = FM | A 2+ non promette il colore: chiede fermo per 3NT. Anche via per fissare atout in forcing (poi appoggio sotto manche) | Sì |
 
-Risposte dell’apertore sul 4CF a liv. 2+: **3NT** = ho il fermo; altrimenti descrive (ripete, rialza, altro). Su 3CF a liv. 3 dell’apertore: spesso corto nel quarto.
+Risposte dell’apertore sul 4CF a liv. 2+: **3NT** = ho il fermo; altrimenti descrive (rialza, altro colore). Su 3CF a liv. 3 dell’apertore: spesso corto nel quarto.
 
 Se il rispondente chiude a manche e l’apertore è ancora forte: riapre (su 3NT → 4NT quantitativo tip. 17+; su manche a colore → cue / RKCB).
 
