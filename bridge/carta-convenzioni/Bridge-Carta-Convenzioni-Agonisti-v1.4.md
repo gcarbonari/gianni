@@ -2,7 +2,7 @@
 
 Bozza da tavolo. Evoluzione della preagonisti v5 / agonisti v1–v1.3: Bergen e Truscott 12+, 1NT standard su 1M, Landy, Ghestem, Lebensohl, difesa Multi, Mathe, **DOPI/ROPI su interferenza al 4NT**.  
 La v5 non si tocca: resta la carta del 3° anno / preagonisti.  
-**v1.4** = v1.3 + chiarimenti (15–17 = apertura 1NT; Truscott se loro 2NT → 3♣; XX dopo Contro; trial ≠ corta; 3CF senza «direzione»). PDF A4 compatto come v1/v1.3.
+**v1.4** = v1.3 + chiarimenti (15–17 = apertura 1NT; Truscott se loro 2NT → 3♣; XX dopo Contro; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M). PDF A4 compatto come v1/v1.3.
 
 | Campo | Contenuto |
 | --- | --- |
@@ -78,6 +78,16 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 | 2 su 1 (con salto) | 1♥ – 2♠, 1♠ – 3♣ | Forcing manche — 6 carte, 4–5 onori. Resta FM anche se loro intervengono a colore. | Sì |
 
 **2♣ e 2 su 1 senza salto:** solo se gli avversari non hanno parlato. Se dichiarano un colore, il nuovo colore a livello 2 è **libera** (non più forcing manche: 5+ carte, circa 10+, forzante solo fino alla ripetizione). Se dicono Contro, un colore a livello 2 è a passare; a livello 1 resta forzante un giro.
+
+**Sesta a fiori/quadri con meno di 11.** In asta libera **non** c’è un salto debole: 3♣/3♦ = Bergen (fit 4ª); 2♣/2♦ = 2 su 1 (12+ o 11 pulito). La sesta **chiusa forte** (6 carte, 4–5 onori) è il 2 su 1 **con salto** (1♥–2♠, 1♠–3♣) = FM, non la mano sotto 11.
+
+| Mano (&lt;11, sesta minore) | Licita |
+| --- | --- |
+| Fit 3ª nel nobile | 2M — il minore resta in secondo piano |
+| Senza fit (0–2 nel nobile) | **1NT**. Se l’apertore passa → si gioca 1NT (la sesta non si mostra). Se ribatte (2♣/2♦/2M…), al secondo giro **nuovo colore** = la lunga |
+| Loro intervengono e Bergen è spento (§1.3.0a) | **3♣ / 3♦ naturali** — lì sì, si dice il minore lungo |
+
+Esempi al secondo giro: `1♥ – 1NT – 2♥ – 3♣` = sesta a fiori; `1♠ – 1NT – 2♥ – 3♦` = sesta a quadri. Non inventare un salto a 3♣/3♦ in asta libera: è Bergen.
 
 **Con 11 (senza fit 4ª).** Il 1NT è 5–10 e il 2 su 1 parte da 12. Con 11:
 
@@ -944,7 +954,7 @@ Fit nobile: 1NT standard, Bergen e Truscott 12+ (dal 10b, senza il 1NT forzante)
 | N5 | Interventi | Ghestem al posto di Michaels. Landy + transfer su 1NT. Lebensohl sul nostro 1NT e dopo X delle loro weak 2. Difesa Multi, barrage a 3, Namyats. Su 1♣ forte loro: Mathe (4.7.1). |
 | N6 | 1NT vs 1M con 5M | Come v5 |
 | N7–N11 | 2/1, libere, Stay, cue | Come v5 |
-| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott; XX senza fit; trial ≠ corta; 3CF senza «direzione» |
+| N12 | v1 → v1.4 | v1.2: 3M barrage dopo X; Bergen su 2♣; DOPI esatto. v1.4: 15–17 apre 1NT; loro 2NT → 3♣ Truscott; XX senza fit; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M via 1NT |
 
 ### E. Alternative non firmate in v1.4
 
