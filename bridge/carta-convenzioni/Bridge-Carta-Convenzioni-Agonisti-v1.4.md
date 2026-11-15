@@ -354,7 +354,9 @@ Senza intervento. Contate i **colori già detti dalla vostra linea** (non quelli
 - **3CF** = nominate il **terzo** colore (ne avevate detti due).
 - **4CF** = nominate l’**ultimo** rimasto (ne avevate detti tre).
 
-**Di default non è un colore vero** (non promette 4–5 carte): è una **licita d’attesa** per far descrivere l’apertore (fermo, 3ª, ripetizione). Se poi **ripetete** quel colore, allora era anche reale.
+**Ripetizione** = ridire **il tuo stesso** colore già nominato (es. `1♥ – 1♠ – 2♥`: l’apertore **ripete** le cuori). Non è un colore nuovo.
+
+**Di default il 3CF non è un colore vero** (non promette 4–5 carte): è una **licita d’attesa** per far descrivere l’apertore (fermo, 3ª, **ripetizione** del suo seme). Se poi **voi** ripetete il 3CF (dite di nuovo quel colore), allora era anche reale.
 
 Non è trial (il trial è dopo **fit 2M**). Non è cue (la cue è con **atout già fissato** e obiettivo slam).
 
