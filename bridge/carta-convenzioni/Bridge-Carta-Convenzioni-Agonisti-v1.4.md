@@ -340,11 +340,11 @@ Licita: nuovo colore a livello 3 (es. 1♥ – 2♥ – 3♣) = Trial bid.
 | --- | --- | --- |
 | 1♥ – 2♥ – **3♣** | **Trial** | Invito: hai aiuto a fiori? Poi 3♥ o 4♥ |
 | 1♥ – 3♣ Bergen – **3♦** (sotto 3♥) | **Trial** | Stesso, se c’è spazio |
-| 1♥ – **2NT** – **3♣** | **Corta a fiori**, non trial | Manche già sì; descrivi il singolo per lo slam |
+| 1♥ – **2NT** – **3♣** | **Corta a fiori**, non trial | Manche già sì; descrivi il singolo/vuoto per lo slam. **Non** è «ho Asso o Re a fiori» (quello è cue, dopo, del capitano) |
 
 | Aspetto | Regola | Alert |
 | --- | --- | --- |
-| Significato | Chiede al compagno aiuto in quel colore (A, K, Q o singolo/vuoto) per decidere 3M o 4M | Sì |
+| Significato | Chiede al compagno **aiuto** in quel colore: **Asso, Re, Dama** o **singolo/vuoto**. Non basta Qxx “brutto” / carte perse. Poi si decide 3M o 4M | Sì |
 | Risposta compagno | Con massimo dell’appoggio o buon controllo nel colore → 4♥ / 4♠. Con minimo e carte perse nel colore → 3♥ / 3♠ | |
 
 ### 2.2 Terzo e quarto colore forzante (3CF / 4CF)
