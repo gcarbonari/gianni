@@ -349,31 +349,18 @@ Licita: nuovo colore a livello 3 (es. 1♥ – 2♥ – 3♣) = Trial bid.
 
 ### 2.2 Terzo e quarto colore forzante (3CF / 4CF)
 
-Senza intervento. Contate i **colori già detti dalla vostra linea** (non quelli loro).
+Quando: senza intervento, dopo che la linea ha già nominato due colori (3CF = il terzo; 4CF = l’unico rimasto).
 
-- **3CF** = nominate il **terzo** colore (ne avevate detti due).
-- **4CF** = nominate l’**ultimo** rimasto (ne avevate detti tre).
-
-**Di default il 3CF non è un colore vero** (non promette 4–5 carte): è una **licita d’attesa**. L’apertore descrive: 3NT col fermo, appoggio, o un altro colore.
-
-Non è trial (il trial è dopo **fit 2M**). Non è cue (la cue è con **atout già fissato** e obiettivo slam).
-
-**Esempi 3CF**
-- `1♣ – 1♥ – 2♣ – 2♦` → ♦ è il terzo colore (♣ e ♥ già detti). A **livello 2** = **forcing manche**.
-- `1♣ – 1♦ – 1♥` → ♥ è il terzo, ma a **livello 1** = solo **F1** (come 1♥ naturale a liv. 1): l’apertore appoggia con 4ª, dice 1NT se bilanciato, altrimenti descrive. **Non** è ancora FM.
-
-**Esempi 4CF**
-- `1♣ – 1♥ – 1♠ – 2♦` → ♦ è l’unico colore mai detto. A liv. 2 = **FM**, chiede soprattutto **fermo a ♦ per 3NT**. Non promette le quadri.
-- `1♣ – 1♦ – 1♥ – 1♠` → ♠ è 4CF a **livello 1** = solo **F1**, non FM.
+Non confondere con trial (fit nobile a 2 + invito) né con cue (atout fissato + obiettivo slam). Il 4CF a livello 1 (es. 1♣ – 1♦ – 1♥ – 1♠) non è FM: come 1♥ – 1♠, l’apertore appoggia con 4ª, dice 1NT se bilanciato, altrimenti ripete.
 
 | Convenzione | Forza | Cosa mostra / chiede | Alert |
 | --- | --- | --- | --- |
-| 3CF | Liv. 1 = F1; liv. 2 = FM | Default = esplorazione (3ª / fermo / direzione). Apertore: appoggia, NT, altro | Sì |
-| 4CF | Liv. 1 = F1; liv. 2+ = FM | A 2+ non promette il colore: chiede fermo per 3NT. Anche via per fissare atout in forcing (poi appoggio sotto manche) | Sì |
+| 3CF | Liv. 1 = F1; liv. 2 = FM | **Default = esplorazione** (chiede 3ª / fermo), non promette lunghezza. Se poi ripeti il 3CF o lo appoggi forte, allora era (anche) colore reale. Apertore: appoggia, NT, ripete, altro | Sì |
+| 4CF | Liv. 1 = F1; liv. 2+ = FM | A 2+ **non** promette il colore: chiede fermo per 3NT. Anche via per fissare atout in forcing (poi appoggio sotto manche) | Sì |
 
-Risposte dell’apertore sul 4CF a liv. 2+: **3NT** = ho il fermo; altrimenti descrive (rialza, altro colore). Su 3CF a liv. 3 dell’apertore: spesso corto nel quarto.
+Risposte tipiche dell’apertore su 4CF: 3NT = ho il fermo; altrimenti descrive (ripete, rialza, altro colore). Su 3CF a liv. 3 dell’apertore: spesso corto nel quarto.
 
-Se il rispondente chiude a manche e l’apertore è ancora forte: riapre (su 3NT → 4NT quantitativo tip. 17+; su manche a colore → cue / RKCB).
+Se il rispondente “chiude” a manche e l’apertore è ancora forte: riapre (su 3NT → 4NT quantitativo tip. 17+; su manche a colore → cue / RKCB).
 
 ---
 
