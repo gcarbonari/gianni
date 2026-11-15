@@ -234,7 +234,24 @@ Asta libera: risposte sopra. Fit 5ª in 5332 → scontare una presa; 4333 col fi
 Sostituto del Truscott: **3♣** = fit 4ª+ nel nobile d’apertura, **12+**, forcing manche (Alert). Poi 3M/4M come dopo Truscott.  
 3♦ = naturale. 3M = ancora barrage. 4M = a giocare (molte atout).
 
-**Regola XX (dopo il loro Contro):** Surcontro = 11+ e **esclude il fit** (accordo di coppia v1.4, in linea col 10b «tende a escludere»). Con fit: 2M / Bergen / Truscott / barrage — **mai XX, mai 3M “costruttivo”**.
+**Regola XX — solo dopo il loro Contro** (es. 1♥ – (X) – ?). Non dopo intervento a colore.
+
+Il **Surcontro (XX)** dice: «ho **11+** e **non** ho fit nel nobile». Vogliamo **punire** se loro parlano: da lì in poi ogni **Contro** della nostra linea è **punitivo**.
+
+**Non** usare XX se hai fit: il fit si dice con 2M / Bergen / 2NT / barrage.
+
+| Tua mano dopo 1M – (X) | Dici | Perché |
+| --- | --- | --- |
+| 11+, **senza** 3+ nel nobile | **XX** | Forza, niente fit, proposta di punire |
+| Fit 3ª, 5–11 | **2M** | Fit; 2M copre anche ~11 (dopo X non c’è surlicita) |
+| Fit 4ª, 7–9 / 10–11 | **3♣ / 3♦** Bergen | Fit quarto, non XX |
+| Fit 4ª, 12+ | **2NT** Truscott | Fit e manche, non XX |
+| Fit 4ª/5ª, 3–7 sbil. | **3M / 4M** | Barrage, non invito |
+| 8–10, fermi, no fit | **1NT** | Parziale, non punizione |
+| 5–10, un colore, no fit | Colore a liv. 1 F1; a liv. 2 a passare | |
+
+Esempio: `1♠ – (X) – XX` = «11+ senza 3 picche; se parlano, contratti».  
+`1♠ – (X) – 2♠` = «ho picche (3ª), 5–11» — **non** XX anche con 11.
 
 #### 1.3.0a Bergen dopo intervento — regola operativa (chiusa)
 
