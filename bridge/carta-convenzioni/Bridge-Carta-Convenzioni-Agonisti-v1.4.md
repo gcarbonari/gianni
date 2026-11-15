@@ -224,11 +224,15 @@ Asta libera: risposte sopra. Fit 5ª in 5332 → scontare una presa; 4333 col fi
 | Fit 3ª, 5–10 | 2M | 2M | |
 | Fit 4ª/5ª, 3–7 sbilanciata | 3M / 4M **barrage** | Uguale: 3M/4M = **solo barrage** (mai invito) | |
 | Fit 4ª, 7–9 / 10–11 (Bergen) | Vedi §1.3.0a | 3♣ / 3♦ Bergen | Sì |
-| Fit 4ª+, 12+ (Truscott) | 2NT se ancora disponibile; se loro hanno detto 2NT → surlicita (fit forzante) | 2NT | Sì |
+| Fit 4ª+, 12+ (Truscott) | **2NT** se è ancora libero (loro a colore a liv. 1/2, o X). **Se loro dicono 2NT** (es. Unusual): il Truscott è occupato — vedi nota sotto | **2NT** | Sì |
 | Fit 3ª **~11 invitante**, inidonea ad altro | **Surlicita** del loro colore (= invito col fit; **non** è il 12+ FM) | **Non XX. Non 3M** (3M = barrage). Con 3ª e ~11: **2M** (competizione; fascia di fatto 5–11) e si riparla se l’asta continua. Con 4ª usate Bergen/Truscott. | Sì (surlicita) |
 | 11+ **senza fit** | — | **XX**; poi tutti i X della linea = punizione | Sì |
 | 8–10 + fermi, no fit | 1NT naturale (non F) | 1NT naturale (non F) | |
 | Nuovo colore | Libere (§1.3.1) | Liv. 1 = F1 · liv. 2 = a passare | |
+
+**Se loro intervengono a 2NT** (di solito Unusual: due minori): tu **non** puoi dire 2NT (Truscott) e **non** esiste una surlicita “nel 2NT” come se fosse un colore.  
+Sostituto del Truscott: **3♣** = fit 4ª+ nel nobile d’apertura, **12+**, forcing manche (Alert). Poi 3M/4M come dopo Truscott.  
+3♦ = naturale. 3M = ancora barrage. 4M = a giocare (molte atout).
 
 **Regola XX (dopo il loro Contro):** Surcontro = 11+ e **esclude il fit** (accordo di coppia v1.4, in linea col 10b «tende a escludere»). Con fit: 2M / Bergen / Truscott / barrage — **mai XX, mai 3M “costruttivo”**.
 
