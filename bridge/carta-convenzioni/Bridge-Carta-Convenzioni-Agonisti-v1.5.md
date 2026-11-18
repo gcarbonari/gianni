@@ -573,7 +573,7 @@ Su intervento 2♣ loro: niente Lebensohl (il 2NT relé andrebbe a 3♣, il loro
 
 Niente Lebensohl. Nuovo colore = 6+, competitivo. 3NT / 4NT = fermi. X = carte.
 
-#### 4.5.3 Loro Contro il nostro 1NT / 2NT
+#### 4.5.3 Loro Contro sul nostro 1NT / 2NT
 
 | Licita | Significato | Alert |
 | --- | --- | --- |
