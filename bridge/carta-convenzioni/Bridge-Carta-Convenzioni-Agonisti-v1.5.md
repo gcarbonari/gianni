@@ -47,7 +47,6 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 | 3CF / 4CF | Terzo / quarto colore forzante | X | Contro |
 | XX | Surcontro | RKCB | Roman Key Card 3014 |
 | DOPI / ROPI | 4NT con interferenza, conteggio esatto | NFB | Negative free bid: le libere (§1.3.1) non lo sono |
-| 10b | Dispensa sul fit nel nobile | | |
 
 ## 1. Aperture a livello 1 (12–20 PO)
 
@@ -262,7 +261,7 @@ Esempio: `1♠ – (X) – XX` = «11+ senza 3 picche; se parlano, contratti».
 | --- | --- | --- |
 | Contro | **Sì** | 3♣ = 7–9 fit 4ª; 3♦ = 10–11 fit 4ª |
 | A livello 1 (es. 1♠ su 1♥) | **Sì** | 3♣ / 3♦ → Bergen |
-| **2♣** | **Parziale** | **3♣ = naturale** (non Bergen). **3♦ = Bergen** (fit 4ª, 10–11). Allineato al 10b: l’intervento non supera 2♣. |
+| **2♣** | **Parziale** | **3♣ = naturale** (non Bergen). **3♦ = Bergen** (fit 4ª, 10–11). L’intervento non supera 2♣. |
 | ≥2♦ (2♦ / 2♥ / 2♠) | **No** | 3♣ e 3♦ **naturali**. Fit invitante → surlicita; fit 4ª 12+ → 2NT (se libero); barrage → 3M/4M |
 
 Sintesi da tavolo: **X o overcall a liv. 1 → Bergen pieno. Dopo 2♣ → solo 3♦ Bergen. Da 2♦ in su → Bergen spento.**
@@ -932,16 +931,16 @@ Difesa su Multi loro: schema subito/ritardato in 4.7.4 (X subito = ♥; X dopo =
 
 ### D. Questa carta v1.5 rispetto a preagonisti v5, agonisti v1 e alle dispense
 
-Fit nobile: 1NT standard, Bergen e Truscott 12+ (dal 10b, senza il 1NT forzante). Aperture a 2, Stayman, slam, segnalazioni: come v5 / v1.
+Fit nobile: 1NT standard, Bergen e Truscott 12+, senza il 1NT forzante. Aperture a 2, Stayman, slam, segnalazioni: come v5 / v1.
 
 | Area | Dispense | Carta agonisti v1.5 |
 | --- | --- | --- |
 | 1NT apertura | 12 | 15–17 senza 5M (N6) — con 5M sempre 1M |
 | 1NT su 1M | — | 5–10 standard, senza fit, Pass ok; anche 11 piatto |
-| Fit nobile | 10b (senza 1NT-F) | 2M 5–10 · Bergen 3♣/3♦ · barrage 3/4 · Truscott 12+ 4ª |
-| Bergen in competizione | 10b | X / liv. 1 = pieno; dopo 2♣ solo 3♦; da 2♦ in su spento (§1.3.0a) |
-| Dopo X: XX / 3M | 10b | XX = 11+ **senza fit**; 3M = **solo barrage**; fit 3ª ~11 → 2M (§1.3.0) |
-| Truscott / capitanato | 10b | Rispondente resta capitano slam (eccezione) |
+| Fit nobile | — | 2M 5–10 · Bergen 3♣/3♦ · barrage 3/4 · Truscott 12+ 4ª |
+| Bergen in competizione | — | X / liv. 1 = pieno; dopo 2♣ solo 3♦; da 2♦ in su spento (§1.3.0a) |
+| Dopo X: XX / 3M | — | XX = 11+ **senza fit**; 3M = **solo barrage**; fit 3ª ~11 → 2M (§1.3.0) |
+| Truscott / capitanato | — | Rispondente resta capitano slam (eccezione) |
 | Weak + 2♣ | 07, 08 | Cuori base |
 | Stayman / transfer / 2 su 1 / 3CF–4CF | 03, 04, 05 | Come in v5 |
 | Ghestem / Landy / Lebensohl / Multi | 11 | Come v1 |
@@ -967,12 +966,12 @@ Fit nobile: 1NT standard, Bergen e Truscott 12+ (dal 10b, senza il 1NT forzante)
 | Convenzione | Perché non è in questa carta | Alert |
 | --- | --- | --- |
 | 10a (preagonisti v5) | 1NT semiforzante + Truscott invito — sostituito da 1NT standard + Truscott 12+ | |
-| 10b (1NT-F) | 1NT forzante + 2M 7/8–10 + appoggio ritardato. Bergen e Truscott 12+ li teniamo; il 1NT-F no | |
+| 1NT forzante | 1NT forzante + 2M 7/8–10 + appoggio ritardato. Bergen e Truscott 12+ li teniamo; il 1NT-F no | |
 | 10c da solo | 1NT-F senza Bergen; 2NT = Truscott invito 10–12. Incompatibile col 2NT 12+ | |
 | Gazzilli | Dopo 1M–1NT il 2♣ è colore reale 4+ | |
 | Michael’s | Sostituito da Ghestem (4.2): i due colori si sanno subito | |
 | DEPO | Non in uso; preferiamo DOPI/ROPI a conteggio esatto (§5.4) | |
-| 3M costruttivo dopo X | Scartato: dopo X il 3M resta **barrage** (10b) | |
+| 3M costruttivo dopo X | Scartato: dopo X il 3M resta **barrage** | |
 
 ---
 
