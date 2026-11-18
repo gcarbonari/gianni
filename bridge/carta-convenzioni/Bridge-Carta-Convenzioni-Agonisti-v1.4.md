@@ -1,10 +1,12 @@
-# Carta delle convenzioni — Agonisti — v1.5
+# Carta delle convenzioni — Agonisti — v1.4
 
-Bozza da tavolo. Agonisti: Bergen e Truscott 12+, 1NT standard su 1M, Landy, Ghestem, Lebensohl, difesa Multi, Mathe, **DOPI/ROPI su interferenza al 4NT**.    
+Bozza da tavolo. Evoluzione della preagonisti v5 / agonisti v1–v1.3: Bergen e Truscott 12+, 1NT standard su 1M, Landy, Ghestem, Lebensohl, difesa Multi, Mathe, **DOPI/ROPI su interferenza al 4NT**.  
+La v5 non si tocca: resta la carta del 3° anno / preagonisti.  
+**v1.4** = v1.3 + chiarimenti (15–17 = apertura 1NT; Truscott se loro 2NT → 3♣; XX dopo Contro; trial ≠ corta; 3CF senza «direzione»; sesta minore &lt;11 su 1M; Bergen spento da 2♦). PDF A4 compatto come v1/v1.3.
 
 | Campo | Contenuto |
 | --- | --- |
-| Coppia |  /  |
+| Coppia | Gianangeli / Carbonari |
 | Squadra / circolo | Angolo Verde — Perugia |
 | Livello | Agonisti — evoluzione Corso Cuori |
 | Sistema | Quinta nobile · Quadri quarte · Cuori base · 1NT standard su 1M · Bergen · Truscott 12+ · Landy · Ghestem · Lebensohl · difesa Multi · Mathe · DOPI/ROPI |
@@ -55,7 +57,7 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 | --- | --- | --- | --- |
 | 1♣ | 2+ fiori | Apertura preparatoria: bilanciata debole (12–14 PO) o forte (18–20 PO), oppure sbilanciata con i fiori. Con 2♣ forzante generico, 1♣/1♦ possono eccezionalmente arrivare a 21–22. (Annuncio: «2+ carte».) | Sì |
 | 1♦ | 4+ quadri | Naturale (QQ). Almeno 4 quadri; può avere 4 fiori; no 5M. | |
-| 1♥ / 1♠ | 5+ carte | Quinta nobile. 12–20 PO. | |
+| 1♥ / 1♠ | 5+ carte | Quinta nobile. 12–20 PO. Repliche a NT: sotto (dispensa 12). | |
 | 1NT | 15–17 PO | Bilanciata senza quinta nobile (4432 / 4333 / quinta minore) | |
 
 ### 1.1 Risposte (asta libera — 5+ PO)
@@ -64,12 +66,12 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 
 | Tipo | Esempio | Significato | Alert |
 | --- | --- | --- | --- |
-| Livello 1 | 1♥ – 1♠ | Naturale, F1 — 4+ nel colore detto, 5–20 PO. Repliche: A / B. | |
+| Livello 1 | 1♥ – 1♠ | Naturale, F1 — 5+ nel colore detto, 5–20 PO. Repliche: A / B. | |
 | 1NT | 1♥ – 1NT, 1♠ – 1NT | **5–10, senza fit** — l’apertore può passare. Anche **11 piatto** senza un colore da dire. Il fit 3ª si dice subito a 2M, non qui. Con meno di 5, anche con 3ª → Pass. | |
 | Appoggio a 2 | 1♥ – 2♥, 1♠ – 2♠ | Fit 3ª 5–10. Fit 4ª troppo bilanciata per Bergen/barrage — come fit terzo. Poi: Pass / Trial / 4M. | |
 | 3♣ Bergen | 1♥ – 3♣, 1♠ – 3♣ | Fit 4ª, 7–9 — più solido del barrage. Apertore: 3M rifiuta; trial sotto 3M; cue sopra 3M. | Sì |
 | 3♦ Bergen | 1♥ – 3♦, 1♠ – 3♦ | Fit 4ª, 10–11 — invito (si ferma se l’apertore è minimo). Apertore: 3M rifiuta; 4M accetta; trial se c’è spazio. | Sì |
-| Appoggio a 3 / 4 barrage | 1♥ – 3♥ / 4♥ | Fit 4ª / 5ª, 3–7 PO, preferibilmente sbilanciata (LPT). Non invito — l’apertore passa (salvo mano enorme). Fit 5ª in 5332: scontare una presa → 3M. | |
+| Appoggio a 3 / 4 barrage | 1♥ – 3♥ / 4♥ | Fit 4ª / 5ª, 3–7 PO, preferibilmente sbilanciata (LPT). Non invito — l’apertore passa (salvo mano enorme). Fit 5ª in 5332: scontare una presa → 3M. **Solo appoggio al nobile d’apertura** — non è l’intervento a 3 in colore nuovo (§4.1). | |
 | 2NT Truscott | 1♥ – 2NT, 1♠ – 2NT | Fit 4ª+, 12+, obiettivo manche ad atout (niente fermi). Fit 3ª da manche → 2 su 1, poi rialzo (non 2NT). | Sì |
 | 2♣ generico | 1♥ – 2♣, 1♠ – 2♣ | Forcing manche. Almeno 2 fiori, 12+ oppure 11 pulito, con o senza fit 3ª. Fit 4ª 12+ = 2NT, non qui. Con tre carte nel nobile e forza da manche (o 11 pulito): si parte da qui e si alza dopo. L’apertore descrive (ripete il nobile, altro seme, 2NT…): non alza le fiori. **Solo senza intervento** (nota sotto). | Sì |
 | 2 su 1 (altro seme) | 1♥ – 2♦, 1♠ – 2♦/2♥ | Forcing manche — 12+ oppure 11 pulito, 5+ nel seme. L’apertore descrive. **Solo senza intervento** (nota sotto). | Sì |
@@ -103,7 +105,7 @@ Fit 4ª 10–11 = Bergen 3♦. Fit 4ª 12+ = 2NT.
 | Tipo | Esempio | Significato | Alert |
 | --- | --- | --- | --- |
 | Livello 1 | 1♣ – 1♥, 1♦ – 1♠ | Naturale, F1 — 4+ carte, 5+ PO. Repliche: A / B. | |
-| 1NT | 1♣ – 1NT, 1♦ – 1NT | 5–10 PO (su 1♣: anche 4–5 ♣). Con 6+ ♣ debole (8–10) → qui. 11–12 bilanciato → 2NT, anche con fiori. | |
+| 1NT | 1♣ – 1NT, 1♦ – 1NT | 5–10 PO (su 1♣: anche 4–5 ♣). Con 6+ ♣ debole (8–10) → qui. 11–12 bilanciato → 2NT, anche con fiori. Repliche: B. | |
 | 2NT invito | 1♣ – 2NT, 1♦ – 2NT | 11–12 PO — invito bilanciato a 3NT (**non** Truscott). Repliche: B. | |
 | Appoggio a 2 su 1♦ | 1♦ – 2♦ | 4+ ♦, 5–9 PO — parziale. Repliche: D. | |
 | Appoggio a 3 / 4 su 1♣ | 1♣ – 3♣ / 4♣ | Barrage — 6+ / 7+ ♣, ≤7 PO, sbilanciata (LPT). Non invito — l’apertore passa. (1♣ può essere 2ª: serve lunghezza vera.) | Sì |
@@ -134,6 +136,8 @@ Con 15–17 PO **bilanciata** (4432 / 4333 / quinta minore, **senza 5M**) si apr
 Dopo **1m – 1M** le bilanciate dell’apertore sono solo due fasce:
 - **12–14** → replica **1NT**
 - **18–20** → salto **2NT** (nega 4ª nel magg. di risposta) o **3NT** (con 4ª)
+
+**Cosa resta a 15–17 dopo 1m:** solo mani **non** da 1NT (sbilanciate: 6ª minore, 5–4, singolo…). Si descrive: fit 4ª → appoggio (rever ~15–17); senza fit → nuovo colore o ripetizione del minore. **Non** saltare a 2NT/3NT: quelli sono 18–20. Non esiste un 2NT «da 15».
 
 #### 1.2.2 B. Replica a NT — 1NT su 1M standard + fasce su 1m
 
@@ -192,7 +196,7 @@ Su 3NT il rispondente con il minimo (12, o 11 pulito) può passare; con extra ce
 | 1M – 2M | Pass / Trial / 4M | ~12–14 / invito 15–17 (Trial: Alert) / manche ~18–20. L’appoggio è 5–10 (il partner può avere il minimo della fascia). | |
 | 1♦ – 2♦ | Pass / nuovo o NT | Minimo / extra (il Trial è solo sul fit nobile) | |
 
-#### 1.2.6 D-bis. Dopo Bergen 3♣ / 3♦
+#### 1.2.6 D-bis. Dopo Bergen 3♣ / 3♦ (allegato 10b)
 
 | Sequenza | Replica apertore | Significato | Alert |
 | --- | --- | --- | --- |
@@ -203,7 +207,7 @@ Su 3NT il rispondente con il minimo (12, o 11 pulito) può passare; con extra ce
 
 Su 3♦ spesso non c’è spazio sotto 3M (es. 1♥ – 3♦): l’apertore decide da solo 3M o 4M.
 
-#### 1.2.7 D-ter. Dopo Truscott 2NT (fit 4ª 12+)
+#### 1.2.7 D-ter. Dopo Truscott 2NT (fit 4ª 12+ — 10b; non il Truscott invito della v5)
 
 Atout fissato, obiettivo minimo manche ad atout. L’apertore è subordinato e descrive. Il rispondente resta capitano slam.
 
@@ -215,6 +219,7 @@ Atout fissato, obiettivo minimo manche ad atout. L’apertore è subordinato e d
 | 3NT | 5332 forte (troppo per l’apertura 1NT) | |
 
 Il rispondente resta capitano slam: su 3M / corta può cue; su 4M di solito Pass.  
+**Attenzione rispetto alla v5:** in v5 (Truscott invito) 3M rifiutava e il nuovo era trial — **qui è il contrario** (3M = extra; nuovo = corta).
 
 ### 1.3 In competizione (Bergen / Truscott 12+)
 
