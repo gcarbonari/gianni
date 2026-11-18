@@ -37,7 +37,17 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 **Forza onori** = prese in qualsiasi contratto (A/K).  
 **Forza giocabile** = prese solo se si impone l’atout (utile per barrage / riaprire a colore, non col Contro).
 
-**Sigle.** PO punti onore · F1 forzante un giro · FM forcing manche · LPT legge delle prese totali · 1M / 1m nobile / minore · QQ quadri quarte · 3CF / 4CF terzo / quarto colore forzante · X contro · XX surcontro · RKCB Roman Key Card 3014 · DOPI / ROPI risposte al 4NT con interferenza · NFB negative free bid (le libere del §1.3.1 non lo sono) · 10b dispensa sul fit nel nobile.
+### Sigle
+
+| Sigla | Significato | Sigla | Significato |
+| --- | --- | --- | --- |
+| PO | Punti onore | F1 | Forzante un giro |
+| FM | Forcing manche | LPT | Legge delle prese totali |
+| 1M / 1m | Nobile / minore | QQ | Quadri quarte |
+| 3CF / 4CF | Terzo / quarto colore forzante | X | Contro |
+| XX | Surcontro | RKCB | Roman Key Card 3014 |
+| DOPI / ROPI | 4NT con interferenza, conteggio esatto | NFB | Negative free bid: le libere (§1.3.1) non lo sono |
+| 10b | Dispensa sul fit nel nobile | | |
 
 ## 1. Aperture a livello 1 (12–20 PO)
 
