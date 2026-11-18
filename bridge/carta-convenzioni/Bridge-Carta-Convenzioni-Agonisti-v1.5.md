@@ -37,18 +37,6 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 **Forza onori** = prese in qualsiasi contratto (A/K).  
 **Forza giocabile** = prese solo se si impone l’atout (utile per barrage / riaprire a colore, non col Contro).
 
-### Legenda richiami
-
-| Sigla in carta | Significato |
-| --- | --- |
-| 10b | Dispensa Corso Cuori — Mani di fit nel nobile (Bergen / Truscott) |
-| 03–08, 11 | Dispense Corso Cuori (Stayman/transfer, 2/1, 3CF–4CF, cue, weak, 2♣, interventi) |
-| LPT | Legge delle Prese Totali |
-| F1 | Forzante un giro |
-| FM | Forcing manche |
-
----
-
 ## 1. Aperture a livello 1 (12–20 PO)
 
 | Apertura | Significato | Descrizione e sviluppi | Alert |
