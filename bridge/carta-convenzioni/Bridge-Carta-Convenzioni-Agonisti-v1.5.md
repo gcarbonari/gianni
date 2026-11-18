@@ -46,7 +46,7 @@ Aprire con 11 solo se la mano è «pulita» (teste, onori nelle lunghe, un nobil
 | 1M / 1m | Nobile / minore | QQ | Quadri quarte |
 | 3CF / 4CF | Terzo / quarto colore forzante | X | Contro |
 | XX | Surcontro | RKCB | Roman Key Card 3014 |
-| DOPI / ROPI | 4NT con interferenza, conteggio esatto | NFB | Negative free bid: le libere (§1.3.1) non lo sono |
+| DOPI / ROPI | 4NT con interferenza, conteggio esatto | NFB | Colore nuovo debole e passabile dopo un intervento. Non in uso: le Libere (§1.3.1) sono forzanti |
 
 ## 1. Aperture a livello 1 (12–20 PO)
 
@@ -277,7 +277,13 @@ Sintesi da tavolo: **X o overcall a liv. 1 → Bergen pieno. Dopo 2♣ → solo 
 
 Dopo il loro **2NT** (diverso da qui): **3♣** = Truscott 12+, **3♦ = Bergen** 10–11, non le quadri (§1.3.0).
 
-#### 1.3.1 Libere (nuovo colore — potevamo Passare; non è NFB)
+#### 1.3.1 Libere (nuovo colore dopo un loro intervento)
+
+Il compagno ha aperto, loro hanno parlato, e noi diciamo un colore nuovo: potevamo Passare. Questa sezione è la **1.3.1**.
+
+**NFB (negative free bid)** è un’altra convenzione, che qui non giochiamo. Sarebbe lo stesso colore nuovo, ma **debole e non forzante**: il compagno può passare. Esempio che non usiamo: `1♥ – (1♠) – 2♣` = 5+ fiori e pochi punti.
+
+Da noi quella licita è una libera, come in tabella.
 
 | Licita | Significato | Alert |
 | --- | --- | --- |
@@ -285,6 +291,8 @@ Dopo il loro **2NT** (diverso da qui): **3♣** = Truscott 12+, **3♦ = Bergen*
 | Liv. 2 senza salto | 5+ carte. Non il 2/1 FM 12+. 10+, F solo fino a ripetizione | Sì |
 | Salto | Come in asta libera: FM, sesta / onori | Sì |
 | Apertore dopo libera | Appoggio / ripeti (min) / nuovo / NT+fermo / surlicita=forte / Pass | |
+
+Esempio nostro: `1♥ – (1♠) – 2♣` = 5+ fiori, circa 10+, forzante finché l’apertore non ripete. `1♣ – (1♦) – 1♠` = forzante un giro.
 
 ### 1.4 Stayman su 1NT (2♣ 8+ PO)
 
